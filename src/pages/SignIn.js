@@ -305,23 +305,22 @@ const SignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (isEmailValid === false) {
+    if (isEmailValid === false || !email) {
       alert("이메일 중복을 확인해주세요.");
       return;
     }
-
-    if (isNicknameValid === false) {
-      alert("닉네임 중복을 확인해주세요.");
-      return;
-    }
-
-    if (!isPasswordMatch) {
+    if (!isPasswordMatch || !password) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
+    if (isNicknameValid === false || !nickname) {
+      alert("닉네임 중복을 확인해주세요.");
+      return;
+    }
+
     if (!selectedEvent || !selectedLeague) {
-      setFeedback("종목과 리그를 모두 선택해주세요.");
+      alert("종목과 리그를 모두 선택해주세요.");
       return;
     }
 
@@ -476,7 +475,11 @@ const SignIn = () => {
 
           {feedback && <p className="feedback">{feedback}</p>}
 
-          <button type="submit" className="submit-button">
+          <button
+            type="submit"
+            className="submit-button"
+            onClick={handleSubmit}
+          >
             가입하기
           </button>
         </form>
