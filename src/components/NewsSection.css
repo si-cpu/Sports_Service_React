@@ -1,0 +1,34 @@
+/* NewsSection.css */
+.news-section {
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.news-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.news-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.news-section li {
+    margin-bottom: 15px;
+}
+
+.news-section a {
+    font-weight: bold;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.news-section a:hover {
+    text-decoration: underline;
+}
+
+.news-section p {
+    margin: 5px 0;
+    color: #555;
+}

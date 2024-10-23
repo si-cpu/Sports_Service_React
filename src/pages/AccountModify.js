@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./AccountModify.css"; // 별도의 CSS 파일
+import axios from "axios";
 
 const AccountModify = () => {
   const [email, setEmail] = useState("");
@@ -215,17 +216,10 @@ const AccountModify = () => {
 
   // 기존 사용자 정보 불러오기 (API 호출 예시)
   useEffect(() => {
-    // 여기서는 예시로 사용자의 기존 데이터를 가져옴 (API로 대체)
     const fetchUserData = async () => {
       try {
-        const response = await fetch("/api/user-profile", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-
+        const response = await axios.get("/api/user-profile");
+        const data = response.data;
         setEmail(data.email);
         setNickname(data.nickname);
         setSelectedTeam(data.team);
@@ -233,7 +227,6 @@ const AccountModify = () => {
         console.error("Error fetching user data:", error);
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -243,6 +236,7 @@ const AccountModify = () => {
   };
 
   const handlePasswordChange = (e) => setPassword(e.target.value);
+
   const handleConfirmPasswordChange = (e) => {
     setConfirmPassword(e.target.value);
     setIsPasswordMatch(e.target.value === password); // 비밀번호 일치 여부 확인
@@ -254,7 +248,9 @@ const AccountModify = () => {
   };
 
   const handleEventChange = (e) => setSelectedEvent(e.target.value);
+
   const handleLeagueChange = (e) => setSelectedLeague(e.target.value);
+
   const handleTeamChange = (e) => setSelectedTeam(e.target.value);
 
   // 이메일 중복 확인 함수
@@ -264,18 +260,15 @@ const AccountModify = () => {
       return;
     }
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      alert("유효한 이메일 주소를 입력하세요.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/check-email", {
-        // 이메일 중복 확인 API 주소
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
+      const response = await axios.post("/api/check-email", { email }); // 이메일 중복 확인 API 주소
+      const data = response.data;
       if (data.isDuplicate) {
         setIsEmailValid(false); // 중복된 이메일이면 false
         alert("이미 사용 중인 이메일입니다.");
@@ -295,19 +288,9 @@ const AccountModify = () => {
       alert("닉네임을 입력하세요.");
       return;
     }
-
     try {
-      const response = await fetch("/api/check-nickname", {
-        // 닉네임 중복 확인 API 주소
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nickname }),
-      });
-
-      const data = await response.json();
-
+      const response = await axios.post("/api/check-nickname", { nickname }); // 닉네임 중복 확인 API 주소
+      const data = response.data;
       if (data.isDuplicate) {
         setIsNicknameValid(false); // 중복된 닉네임이면 false
         alert("이미 사용 중인 닉네임입니다.");
@@ -330,23 +313,20 @@ const AccountModify = () => {
       return;
     }
 
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
+    if (password && !passwordPattern.test(password)) {
+      alert("비밀번호는 최소 8자 이상, 숫자와 문자를 포함해야 합니다.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/update-profile", {
-        // 정보 수정 API 주소
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          nickname,
-          team: selectedTeam,
-        }),
-      });
-
-      const data = await response.json();
-
+      const response = await axios.post("/api/update-profile", {
+        email,
+        password,
+        nickname,
+        team: selectedTeam,
+      }); // 정보 수정 API 주소
+      const data = response.data;
       if (data.success) {
         alert("정보가 성공적으로 수정되었습니다.");
       } else {
@@ -360,6 +340,7 @@ const AccountModify = () => {
 
   const subLeagues = selectedEvent ? LegueData[selectedEvent].subAreas : [];
   const teams = selectedLeague ? TeamData[selectedLeague].subAreas : [];
+
   return (
     <div className="account-modify-container">
       <div className="account-modify-box">
@@ -496,5 +477,4 @@ const AccountModify = () => {
     </div>
   );
 };
-
 export default AccountModify;

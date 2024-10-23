@@ -9,7 +9,7 @@ const BoardList = () => {
 
   const getBoardList = async () => {
     try {
-      const response = await axios.get("http://localhost:3306/board");
+      const response = await axios.get("http://localhost:3306/board"); // API 요청 (http:// 추가)
       const boardData = response.data; // 응답 데이터 추출
       setBoardList(boardData.data); // 게시글 목록 상태에 저장
       console.log(boardData.pagination); // 페이징 정보 콘솔 출력
@@ -41,7 +41,7 @@ const BoardList = () => {
           <li key={board.idx}>
             <Link to={`json링크/${board.idx}`}>
               <div>
-                <strong>{board.title}</strong> - {board.nickname}{" "}
+                <strong>{board.title}</strong> - {board.writer}{" "}
                 {/* 제목과 작성자 표시 */}
                 <p>{board.content}</p> {/* 내용 표시 */}
               </div>

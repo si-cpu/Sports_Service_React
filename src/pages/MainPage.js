@@ -1,4 +1,5 @@
 import React from "react";
+import NewsSection from "../components/NewsSection";
 import "./MainPage.css";
 
 const MainPage = () => {
@@ -47,9 +48,11 @@ const MainPage = () => {
         </button>
       </section>
       <section className="content-grid">
-        <div className="news">뉴스</div>
-        <div className="my-team">마이팀</div>
-        <div className="community">게시판</div>
+        <section className="news">
+          <NewsSection />
+        </section>
+        <section className="myTeam"></section>
+        <section className="board"></section>
       </section>
     </div>
   );
