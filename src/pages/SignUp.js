@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import "./SignIn.css";
+import "./SignUp.css";
+import axios, { Axios } from "axios";
 
-const SignIn = () => {
+const SignUp = () => {
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(null);
+  const [emailError, setEmailError] = useState(""); // 이메일 에러 메시지
   const [password, setPassword] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(""); // 비밀번호 강도 메시지
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordMatch, setIsPasswordMatch] = useState(true);
   const [nickname, setNickname] = useState("");
@@ -13,7 +16,6 @@ const SignIn = () => {
   const [selectedLeague, setSelectedLeague] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [feedback, setFeedback] = useState("");
-
   const LegueData = {
     1: {
       name: "야구",
@@ -152,7 +154,6 @@ const SignIn = () => {
         { num: 94, name: "서울 삼성" },
       ],
     },
-
     10: {
       name: "NBA",
       subAreas: [
@@ -213,82 +214,148 @@ const SignIn = () => {
       ],
     },
   };
+  // 이메일 형식 유효성 검사 정규 표현식
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // 이메일 입력 처리 함수
   const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    setIsEmailValid(null);
+    const emailValue = e.target.value;
+    setEmail(emailValue);
+
+    // 이메일 형식 검토
+    if (!emailRegex.test(emailValue)) {
+      setIsEmailValid(false);
+      setEmailError("유효하지 않은 이메일 형식입니다.");
+    } else {
+      setIsEmailValid(null); // 중복 확인을 위해 초기화
+      setEmailError(""); // 에러 메시지 초기화
+    }
   };
 
-  const handlePasswordChange = (e) => setPassword(e.target.value);
+  // 비밀번호 강도 체크 함수
+  const checkPasswordStrength = (password) => {
+    let strength = "";
+
+    if (password.length < 8) {
+      strength = "비밀번호는 8자 이상이어야 합니다.";
+    } else {
+      let strengthLevel = 0;
+      if (/[A-Z]/.test(password)) strengthLevel++; // 대문자 포함
+      if (/[a-z]/.test(password)) strengthLevel++; // 소문자 포함
+      if (/\d/.test(password)) strengthLevel++; // 숫자 포함
+      if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strengthLevel++; // 특수문자 포함
+
+      // 비밀번호 강도 레벨에 따른 메시지
+      switch (strengthLevel) {
+        case 1:
+          strength = "약함";
+          alert("비밀번호 강도가 약합니다. 강한 비밀번호를 입력하세요.");
+          return;
+        case 2:
+          strength = "보통";
+          break;
+        case 3:
+          strength = "강함";
+          break;
+        case 4:
+          strength = "매우 강함";
+          break;
+        default:
+          strength = "약함";
+          alert("비밀번호 강도가 약합니다. 강한 비밀번호를 입력하세요.");
+          return;
+      }
+    }
+    setPasswordStrength(strength);
+  };
+
+  // 비밀번호 입력 처리 함수
+  const handlePasswordChange = (e) => {
+    const passwordValue = e.target.value;
+    setPassword(passwordValue);
+    checkPasswordStrength(passwordValue); // 비밀번호 강도 체크 호출
+  };
 
   const handleConfirmPasswordChange = (e) => {
     setConfirmPassword(e.target.value);
     setIsPasswordMatch(e.target.value === password);
   };
 
+  // 닉네임 입력 처리 함수
   const handleNicknameChange = (e) => {
     setNickname(e.target.value);
-    setIsNicknameValid(null);
+    setIsNicknameValid(null); // 중복 확인을 위해 초기화
   };
 
+  // 종목 선택 처리 함수
   const handleEventChange = (event) => {
     setSelectedEvent(event.target.value);
-    setSelectedLeague(""); // Reset league selection
-    setSelectedTeam(""); // Reset team selection
+    setSelectedLeague(""); // 리그 선택 초기화
+    setSelectedTeam(""); // 팀 선택 초기화
     setFeedback("");
   };
 
+  // 리그 선택 처리 함수
   const handleLeagueChange = (event) => {
     setSelectedLeague(event.target.value);
-    setSelectedTeam(""); // Reset team selection
+    setSelectedTeam(""); // 팀 선택 초기화
     setFeedback("");
   };
 
+  // 팀 선택 처리 함수
   const handleTeamChange = (event) => {
     setSelectedTeam(event.target.value);
   };
 
+  // 이메일 중복 체크 함수
   const checkEmailDuplicate = async () => {
     if (!email) {
       alert("이메일을 입력하세요.");
       return;
     }
 
+    if (isEmailValid === false) {
+      alert("유효하지 않은 이메일입니다.");
+      return;
+    }
     try {
-      const response = await fetch("/api/check-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      const response = await axios.post("/api/check-nickname", {
+        email: email, // POST 요청에 보낼 데이터
       });
 
-      const data = await response.json();
+      const data = response.data; // 응답 데이터 추출
+
       if (data.isDuplicate) {
         setIsEmailValid(false);
-        alert("이미 사용 중인 이메일입니다.");
+        alert("이미 사용 중인 닉네임입니다.");
       } else {
         setIsEmailValid(true);
-        alert("사용 가능한 이메일입니다.");
+        alert("사용 가능한 닉네임입니다.");
       }
     } catch (error) {
       console.error("Error checking email:", error);
-      alert("이메일 중복 확인 중 오류가 발생했습니다.");
+      alert("닉네임 중복 확인 중 오류가 발생했습니다.");
     }
   };
-
+  // 닉네임 중복 체크 함수
   const checkNicknameDuplicate = async () => {
     if (!nickname) {
       alert("닉네임을 입력하세요.");
       return;
     }
 
+    if (isNicknameValid === false) {
+      alert("유효하지 않은 닉네임입니다.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/check-nickname", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname }),
+      const response = await axios.post("/api/check-nickname", {
+        nickname: nickname, // POST 요청에 보낼 데이터
       });
 
-      const data = await response.json();
+      const data = response.data; // 응답 데이터 추출
+
       if (data.isDuplicate) {
         setIsNicknameValid(false);
         alert("이미 사용 중인 닉네임입니다.");
@@ -302,25 +369,22 @@ const SignIn = () => {
     }
   };
 
+  // 폼 제출 처리 함수
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (isEmailValid === false || !email) {
-      alert("이메일 중복을 확인해주세요.");
+      alert("이메일을 올바르게 입력했는지 확인해주세요.");
       return;
     }
-    if (!isPasswordMatch || !password) {
+
+    if (!isPasswordMatch) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    if (isNicknameValid === false || !nickname) {
-      alert("닉네임 중복을 확인해주세요.");
-      return;
-    }
-
     if (!selectedEvent || !selectedLeague) {
-      alert("종목과 리그를 모두 선택해주세요.");
+      setFeedback("종목과 리그를 모두 선택해주세요.");
       return;
     }
 
@@ -338,6 +402,24 @@ const SignIn = () => {
   const subLeagues = selectedEvent ? LegueData[selectedEvent].subAreas : [];
   const teams = selectedLeague ? TeamData[selectedLeague].subAreas : [];
 
+  const postdata = () => {
+    const url = "http://localhost:8080/";
+    const data = {
+      Email: email,
+      Password: password,
+      Nickname: nickname,
+      SelectedTeam: selectedTeam,
+    };
+    const config = { "Content-Type": "application/json" };
+
+    Axios.post(url, data, config)
+      .then((res) => {
+        // 성공 처리
+      })
+      .catch((err) => {
+        // 에러 처리
+      });
+  };
   return (
     <div className="signup-container">
       <div className="signup-box">
@@ -348,6 +430,7 @@ const SignIn = () => {
           가입을 통해 더 다양한 서비스를 만나보세요
         </p>
         <form onSubmit={handleSubmit}>
+          {/* 이메일 입력 */}
           <div className="input-group">
             <label>이메일 입력</label>
             <input
@@ -365,14 +448,12 @@ const SignIn = () => {
               중복확인
             </button>
           </div>
-
-          {isEmailValid === false && (
-            <p className="error">이미 사용 중인 이메일입니다.</p>
-          )}
+          {emailError && <p className="error">{emailError}</p>}
           {isEmailValid === true && (
             <p className="success">사용 가능한 이메일입니다.</p>
           )}
 
+          {/* 비밀번호 입력 */}
           <div className="input-group">
             <label>비밀번호 입력</label>
             <input
@@ -382,23 +463,31 @@ const SignIn = () => {
               placeholder="비밀번호 입력 (8~20자)"
               required
             />
+
+            {/* 비밀번호 재입력 */}
+            <div className="input-group">
+              <label>비밀번호 재입력</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                placeholder="비밀번호 재입력"
+                required
+              />
+            </div>
           </div>
 
+          {/* 비밀번호 강도 표시 */}
           <div className="input-group">
-            <label>비밀번호 재입력</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              placeholder="비밀번호 재입력"
-              required
-            />
+            <label>비밀번호 강도</label>
+            <p>{passwordStrength}</p>
           </div>
 
           {!isPasswordMatch && (
             <p className="error">비밀번호가 일치하지 않습니다.</p>
           )}
 
+          {/* 닉네임 입력 및 중복확인 */}
           <div className="input-group">
             <label>닉네임 입력</label>
             <input
@@ -411,18 +500,11 @@ const SignIn = () => {
             <button
               type="button"
               className="check-button"
-              onClick={checkNicknameDuplicate}
+              onClick={handleNicknameChange}
             >
               중복확인
             </button>
           </div>
-
-          {isNicknameValid === false && (
-            <p className="error">이미 사용 중인 닉네임입니다.</p>
-          )}
-          {isNicknameValid === true && (
-            <p className="success">사용 가능한 닉네임입니다.</p>
-          )}
 
           <div className="input-group">
             <label htmlFor="event-select">종목 선택:</label>
@@ -472,14 +554,10 @@ const SignIn = () => {
               ))}
             </select>
           </div>
-
           {feedback && <p className="feedback">{feedback}</p>}
 
-          <button
-            type="submit"
-            className="submit-button"
-            onClick={handleSubmit}
-          >
+          {/* 기타 필드 및 폼 제출 버튼 */}
+          <button type="submit" className="submit-button" onClick={postdata}>
             가입하기
           </button>
         </form>
@@ -487,5 +565,4 @@ const SignIn = () => {
     </div>
   );
 };
-
-export default SignIn;
+export default SignUp;
