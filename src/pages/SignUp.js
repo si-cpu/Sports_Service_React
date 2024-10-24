@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./SignUp.css";
-import axios, { Axios } from "axios";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ const SignUp = () => {
   const [selectedLeague, setSelectedLeague] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [feedback, setFeedback] = useState("");
+  const navigate = useNavigate();
   const LegueData = {
     1: {
       name: "야구",
@@ -318,24 +320,6 @@ const SignUp = () => {
       alert("유효하지 않은 이메일입니다.");
       return;
     }
-    try {
-      const response = await axios.post("/api/check-nickname", {
-        email: email, // POST 요청에 보낼 데이터
-      });
-
-      const data = response.data; // 응답 데이터 추출
-
-      if (data.isDuplicate) {
-        setIsEmailValid(false);
-        alert("이미 사용 중인 닉네임입니다.");
-      } else {
-        setIsEmailValid(true);
-        alert("사용 가능한 닉네임입니다.");
-      }
-    } catch (error) {
-      console.error("Error checking email:", error);
-      alert("닉네임 중복 확인 중 오류가 발생했습니다.");
-    }
   };
   // 닉네임 중복 체크 함수
   const checkNicknameDuplicate = async () => {
@@ -402,24 +386,46 @@ const SignUp = () => {
   const subLeagues = selectedEvent ? LegueData[selectedEvent].subAreas : [];
   const teams = selectedLeague ? TeamData[selectedLeague].subAreas : [];
 
-  const postdata = () => {
-    const url = "http://localhost:8080/";
+  const postData = async () => {
+    const url = "http://192.168.0.175:8181/member/register";
     const data = {
-      Email: email,
-      Password: password,
-      Nickname: nickname,
-      SelectedTeam: selectedTeam,
+      email: email,
+      password: password,
+      nick_name: nickname,
+      // SelectedTeam: selectedTeam,
     };
-    const config = { "Content-Type": "application/json" };
+  
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+  
+    try {
+      const response = await axios.post(url, data, config);
+      console.log('response: ', response);
+      console.log('success: ', response.data.success);
 
-    Axios.post(url, data, config)
-      .then((res) => {
+      
+      if (response.status) {
         // 성공 처리
-      })
-      .catch((err) => {
-        // 에러 처리
-      });
+        console.log("Registration successful!", response.data);
+        navigate("/Mainpage");
+        // Do something with the response, like navigate to another page or update the UI
+      } else {
+        // 서버에서 성공하지 않았다는 응답을 받은 경우 처리
+        console.error("Registration failed: ", response.data.message);
+        // Show error message to the user
+      }
+    } catch (err) {
+      // 네트워크 에러나 기타 에러 처리
+      console.error("Error during registration: ", err);
+      // Show error message to the user
+    }
   };
+  
+
   return (
     <div className="signup-container">
       <div className="signup-box">
@@ -500,7 +506,7 @@ const SignUp = () => {
             <button
               type="button"
               className="check-button"
-              onClick={handleNicknameChange}
+              onClick={checkNicknameDuplicate}
             >
               중복확인
             </button>
@@ -557,7 +563,7 @@ const SignUp = () => {
           {feedback && <p className="feedback">{feedback}</p>}
 
           {/* 기타 필드 및 폼 제출 버튼 */}
-          <button type="submit" className="submit-button" onClick={postdata}>
+          <button type="submit" className="submit-button" onClick={postData}>
             가입하기
           </button>
         </form>

@@ -11,6 +11,11 @@ const LoginModal = ({ onClose }) => {
     onClose();
   };
 
+  const mainPage = () => {
+    navigate("/Mainpage");
+    onClose();
+  };
+
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,15 +23,29 @@ const LoginModal = ({ onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "/api/login",
-        { nickname, password },
-        { withCredentials: true }
-      );
-      if (response.data.success) {
+    const postData = async () => {
+      const url = "http://192.168.0.175:8181/member/register";
+      const data = {
+        nickname: nickname,
+        password: password,
+      };
+    
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      };
+    
+      try {
+        const response = await axios.post(url, data, config);
+        console.log('response: ', response);
+        console.log('success: ', response.data.success);
+  
+      if (response.status) {
         setUser(response.data.user);
-        onClose();
+        alert("로그인 성공!")
+        mainPage();
       } else {
         setError("닉네임과 비밀번호가 유효하지 않습니다.");
       }
@@ -34,6 +53,7 @@ const LoginModal = ({ onClose }) => {
       setError("로그인 도중 오류가 발생했습니다. 관리자가 고치는 중입니다.");
     }
   };
+};
 
   return (
     <div className="modal-overlay" onClick={onClose}>
