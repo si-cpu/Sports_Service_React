@@ -1,38 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./SignIn.css";
+import AuthContext from "../../src/auth-context";
 
 const LoginModal = ({ onClose }) => {
   const navigate = useNavigate();
-
-  const signupPage = () => {
-    navigate("/SignUp");
-    onClose();
-  };
-
-  const mainPage = () => {
-    navigate("/");
-    onClose();
-  };
+  const { setCurrentUser } = useContext(AuthContext);
 
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
-  const [autoLogin, setAutoLogin] = useState(false); // 자동 로그인 상태 추가
+  const [autoLogin, setAutoLogin] = useState(false);
   const [error, setError] = useState("");
-  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    // Reset error message when inputs change
+    setError("");
+  }, [nickname, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await postData(); // postData 호출 추가
+    await postData();
   };
 
   const postData = async () => {
-    const url = "http://192.168.0.175:8181/member/login";
+    const url = "http://localhost:8181/member/login"; // Adjust the URL as needed
     const data = {
       nick_name: nickname,
       password: password,
-      auto_login: autoLogin, // autoLogin 상태를 서버로 전송
+      auto_login: autoLogin,
     };
     const config = {
       headers: {
@@ -43,11 +39,12 @@ const LoginModal = ({ onClose }) => {
     try {
       const response = await axios.post(url, data, config);
       console.log("response: ", response);
-      console.log("success: ", response.data.success);
-      if (response.data.success) {
-        setUser(response.data.user);
+      if (response.data === "success") {
+        setCurrentUser(true); // Update currentUser
         alert("로그인 성공!");
-        mainPage();
+        resetForm(); // Reset form fields
+        navigate("/"); // Redirect to the main page
+        onClose(); // Close the modal
       } else {
         setError("닉네임과 비밀번호가 유효하지 않습니다.");
       }
@@ -56,18 +53,29 @@ const LoginModal = ({ onClose }) => {
     }
   };
 
+  const resetForm = () => {
+    setNickname("");
+    setPassword("");
+    setAutoLogin(false);
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>
+        <button
+          className="close-button"
+          onClick={onClose}
+          aria-label="Close modal"
+        >
           &times;
         </button>
         <form onSubmit={handleSubmit}>
-          <h1> 만나서 반갑습니다!</h1>
-          <h3> 로그인을 진행해주세요!</h3>
+          <h1>만나서 반갑습니다!</h1>
+          <h3>로그인을 진행해주세요!</h3>
           <div>
-            <label>닉네임:</label>
+            <label htmlFor="nickname">닉네임:</label>
             <input
+              id="nickname"
               type="text"
               placeholder="닉네임 입력"
               value={nickname}
@@ -76,8 +84,9 @@ const LoginModal = ({ onClose }) => {
             />
           </div>
           <div>
-            <label>비밀번호:</label>
+            <label htmlFor="password">비밀번호:</label>
             <input
+              id="password"
               type="password"
               placeholder="비밀번호 입력"
               value={password}
@@ -95,11 +104,15 @@ const LoginModal = ({ onClose }) => {
               자동 로그인
             </label>
           </div>
-          {error && <p>{error}</p>}
+          {error && <p className="error">{error}</p>}
           <button type="submit" className="logIn">
             Login
           </button>
-          <button type="button" className="signup" onClick={signupPage}>
+          <button
+            type="button"
+            className="signup"
+            onClick={() => navigate("/SignUp")}
+          >
             회원가입
           </button>
         </form>

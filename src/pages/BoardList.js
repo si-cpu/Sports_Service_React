@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
 import BoardWriteComponent from "../components/BoardWriteComponent";
 import BoardComponent from "../components/BoardComponent";
+import AuthContext from "../auth-context";
 
-const API_URL = "http://192.168.0.175:8181/board";
+const API_URL = "http://localhost:8181/board";
 
 const BoardListBlock = styled.div`
   padding: 2rem;
@@ -108,13 +109,13 @@ const BoardItem = styled.div`
 `;
 
 const BoardList = () => {
+  const { currentUser } = useContext(AuthContext);
   const [boardList, setBoardList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState(null);
-  const [currentUser, setCurrentUser] = useState(""); // 사용자 상태 추가
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("none");
 
@@ -171,44 +172,44 @@ const BoardList = () => {
     setBoardList([newPost, ...boardList]);
   };
 
-  const handleSearch = () => {
-    const filteredList = boardList.filter((board) =>
+  const filteredAndSortedBoardList = useMemo(() => {
+    const filtered = boardList.filter((board) =>
       board.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    setBoardList(filteredList);
-  };
 
-  const handleSortByViews = () => {
-    const sortedList = [...boardList].sort((a, b) => b.viewCount - a.viewCount);
-    setBoardList(sortedList);
-    setSortBy("views");
-  };
+    const sorted = [...filtered];
+    if (sortBy === "views") {
+      sorted.sort((a, b) => b.viewCount - a.viewCount);
+    } else if (sortBy === "likes") {
+      sorted.sort((a, b) => b.likeCount - a.likeCount);
+    }
 
-  const handleSortByLikes = () => {
-    const sortedList = [...boardList].sort((a, b) => b.likeCount - a.likeCount);
-    setBoardList(sortedList);
-    setSortBy("likes");
-  };
+    return sorted;
+  }, [boardList, searchQuery, sortBy]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleSearch();
+      setSearchQuery(e.target.value);
     }
   };
 
   if (loading) {
     return <div>Loading...</div>;
   }
+
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <div>
+        {error}
+        <button onClick={getBoardList}>Retry</button>
+      </div>
+    );
   }
 
   return (
     <BoardListBlock>
       <Title>Sports Service 게시글</Title>
-      {currentUser && ( // 사용자 로그인 확인
-        <Button onClick={openWriteModal}>글쓰기</Button>
-      )}
+      {currentUser && <Button onClick={openWriteModal}>글쓰기</Button>}
       <div>
         <SearchInput
           type="text"
@@ -216,13 +217,16 @@ const BoardList = () => {
           value={searchQuery}
           onKeyDown={handleKeyDown}
           onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search posts"
         />
-        <SearchButton onClick={handleSearch}>검색</SearchButton>
-        <SortButton onClick={handleSortByViews}>조회수 정렬</SortButton>
-        <SortButton onClick={handleSortByLikes}>추천수 정렬</SortButton>
+        <SearchButton onClick={() => setSearchQuery(searchQuery)}>
+          검색
+        </SearchButton>
+        <SortButton onClick={() => setSortBy("views")}>조회수 정렬</SortButton>
+        <SortButton onClick={() => setSortBy("likes")}>추천수 정렬</SortButton>
       </div>
       <BoardListUl>
-        {boardList.map((board) => (
+        {filteredAndSortedBoardList.map((board) => (
           <BoardListLi key={board.idx}>
             <Link to="#" onClick={() => openModal(board)}>
               <BoardItem>
@@ -232,8 +236,10 @@ const BoardList = () => {
                 <p>내용: {board.content}</p>
                 <p>등록일: {board.reg_date}</p>
                 <p>수정일: {board.mod_date}</p>
-                <p>조회수: {board.view_count}</p>
-                <p>좋아요 수: {board.good_count}</p>
+                <p>조회수: {board.viewCount}</p>{" "}
+                {/* Ensure consistent casing */}
+                <p>좋아요 수: {board.likeCount}</p>{" "}
+                {/* Ensure consistent casing */}
               </BoardItem>
             </Link>
           </BoardListLi>
