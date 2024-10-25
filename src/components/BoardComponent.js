@@ -5,7 +5,7 @@ import "./BoardComponent.css"; // 스타일 불러오기
 
 const BASE_URL = "http://localhost:3306";
 
-const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
+const BoardComponent = ({ isOpen, onClose, board }) => {
   const [title, setTitle] = useState(board.title);
   const [content, setContent] = useState(board.content);
   const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +14,7 @@ const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
   const [newComment, setNewComment] = useState(""); // 댓글 등록 로직
   const [editingComment, setEditingComment] = useState(null); // 수정 중인 댓글 상태 추가
   const [editingContent, setEditingContent] = useState(""); // 수정중인 댓글 내용
+  const [currentUser, setCurrentUser] = useState(null); // 현재 사용자 정보
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -27,7 +28,17 @@ const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/currentUser`); // 현재 사용자 정보 요청
+        setCurrentUser(response.data.user);
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+      }
+    };
+
     fetchComments();
+    fetchCurrentUser(); // 현재 사용자 정보 가져오기
   }, [board.idx]);
 
   // 게시글 수정 로직
@@ -106,7 +117,7 @@ const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
     }
   };
 
-  //댓글 삭제로직
+  // 댓글 삭제 로직
   const handleDeleteComment = async (commentId) => {
     setIsLoading(true);
     try {
@@ -153,21 +164,6 @@ const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
       alert("댓글 수정 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // 댓글 좋아요 수 증가 로직 서버 연동
-  const increaseLikeCountComment = async (board) => {
-    try {
-      await axios.post(`http://localhost:3306/board/${board.idx}/like`);
-      const updatedCommentList = Comment.map((reply) =>
-        reply.idx === Comment.idx
-          ? { ...reply, likeCount: reply.likeCount + 1 }
-          : reply
-      );
-      setComments(updatedCommentList);
-    } catch (err) {
-      console.error("좋아요 증가 실패:", err);
     }
   };
 
@@ -265,7 +261,6 @@ const BoardComponent = ({ isOpen, onClose, board, currentUser }) => {
           onChange={(e) => setNewComment(e.target.value)}
           disabled={isLoading}
         />
-        <p>좋아요 수: {Comment.likeCount}</p> {/* 좋아요 수 표시 */}
         <button onClick={handleAddComment} disabled={isLoading}>
           {isLoading ? "저장 중..." : "댓글 추가"}
         </button>

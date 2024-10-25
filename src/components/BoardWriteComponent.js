@@ -16,10 +16,13 @@ const BoardWriteComponent = ({ isOpen, onClose, addNewPost }) => {
     setIsLoading(true);
     try {
       //   실제 서버에 새 게시글 저장 요청
-      const response = await axios.post("http://localhost:3306/board", {
-        title: title,
-        content: content,
-      });
+      const response = await axios.post(
+        "http://192.168.0.175:8181/board/save",
+        {
+          title: title,
+          content: content,
+        }
+      );
 
       // 성공적으로 저장되었을 때 새로운 게시글을 목록에 추가하는 함수 호출
       addNewPost(response);

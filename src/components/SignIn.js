@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./SignIn.css";
@@ -18,41 +18,42 @@ const LoginModal = ({ onClose }) => {
 
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
+  const [autoLogin, setAutoLogin] = useState(false); // 자동 로그인 상태 추가
   const [error, setError] = useState("");
   const [user, setUser] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const postData = async () => {
-      const url = "http://192.168.0.175:8181/member/register";
-      const data = {
-        nickname: nickname,
-        password: password,
-      };
+    await postData(); // postData 호출 추가
+  };
 
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      };
-
-      try {
-        const response = await axios.post(url, data, config);
-        console.log("response: ", response);
-        console.log("success: ", response.data.success);
-
-        if (response.status) {
-          setUser(response.data.user);
-          alert("로그인 성공!");
-          mainPage();
-        } else {
-          setError("닉네임과 비밀번호가 유효하지 않습니다.");
-        }
-      } catch (error) {
-        setError("로그인 도중 오류가 발생했습니다. 관리자가 고치는 중입니다.");
-      }
+  const postData = async () => {
+    const url = "http://192.168.0.175:8181/member/login";
+    const data = {
+      nick_name: nickname,
+      password: password,
+      auto_login: autoLogin, // autoLogin 상태를 서버로 전송
     };
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+    try {
+      const response = await axios.post(url, data, config);
+      console.log("response: ", response);
+      console.log("success: ", response.data.success);
+      if (response.data.success) {
+        setUser(response.data.user);
+        alert("로그인 성공!");
+        mainPage();
+      } else {
+        setError("닉네임과 비밀번호가 유효하지 않습니다.");
+      }
+    } catch (error) {
+      setError("로그인 도중 오류가 발생했습니다. 관리자가 고치는 중입니다.");
+    }
   };
 
   return (
@@ -67,7 +68,7 @@ const LoginModal = ({ onClose }) => {
           <div>
             <label>닉네임:</label>
             <input
-              type="nickname"
+              type="text"
               placeholder="닉네임 입력"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
@@ -84,8 +85,20 @@ const LoginModal = ({ onClose }) => {
               required
             />
           </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={autoLogin}
+                onChange={(e) => setAutoLogin(e.target.checked)}
+              />
+              자동 로그인
+            </label>
+          </div>
           {error && <p>{error}</p>}
-          <button type="submit">Login</button>
+          <button type="submit" className="logIn">
+            Login
+          </button>
           <button type="button" className="signup" onClick={signupPage}>
             회원가입
           </button>

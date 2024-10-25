@@ -5,6 +5,8 @@ import styled from "styled-components";
 import BoardWriteComponent from "../components/BoardWriteComponent";
 import BoardComponent from "../components/BoardComponent";
 
+const API_URL = "http://192.168.0.175:8181/board";
+
 const BoardListBlock = styled.div`
   padding: 2rem;
   max-width: 800px;
@@ -22,12 +24,38 @@ const Title = styled.h1`
 `;
 
 const SearchInput = styled.input`
-  width: 100%;
+  width: calc(100% - 100px);
   padding: 0.5rem;
   margin-bottom: 1.5rem;
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 1rem;
+`;
+
+const SearchButton = styled.button`
+  padding: 0.5rem;
+  margin-left: 10px;
+  background: #3b5998;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover {
+    background: #3a5888;
+  }
+`;
+
+const SortButton = styled.button`
+  margin-left: 10px;
+  padding: 0.5rem;
+  background: #3b5998;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover {
+    background: #3a5888;
+  }
 `;
 
 const Button = styled.button`
@@ -84,18 +112,16 @@ const BoardList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false); // 글쓰기 모달 상태 추가
+  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState(null);
-  const [currentUser] = useState(""); // 현재 사용자의 닉네임을 저장하는 상태
-  const [searchQuery, setSearchQuery] = useState(""); // 검색어 상태 추가
+  const [currentUser, setCurrentUser] = useState(""); // 사용자 상태 추가
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("none");
 
-  // 게시글 불러오기 로직
   const getBoardList = async () => {
     try {
-      const response = await axios.get("http://localhost:3306/board");
-      const boardData = response.data;
-      setBoardList(boardData.data);
-      console.log(boardData.pagination);
+      const response = await axios.get(`${API_URL}/find_all`);
+      setBoardList(response.data);
     } catch (err) {
       setError("게시글 불러오는데 실패했습니다.");
       console.error(err);
@@ -108,12 +134,9 @@ const BoardList = () => {
     getBoardList();
   }, []);
 
-  // 조회수 증가 로직 서버 연동
   const increaseViewCount = async (board) => {
     try {
-      await axios.post(
-        `http://localhost:3306/board/${board.idx}/increaseViewCount`
-      );
+      await axios.post(`${API_URL}/findall/${board.idx}/increaseViewCount`);
       const updatedBoardList = boardList.map((item) =>
         item.idx === board.idx
           ? { ...item, viewCount: item.viewCount + 1 }
@@ -122,21 +145,6 @@ const BoardList = () => {
       setBoardList(updatedBoardList);
     } catch (err) {
       console.error("조회수 증가 실패:", err);
-    }
-  };
-
-  // 좋아요 수 증가 로직 서버 연동
-  const increaseLikeCount = async (board) => {
-    try {
-      await axios.post(`http://localhost:3306/board/${board.idx}/like`);
-      const updatedBoardList = boardList.map((item) =>
-        item.idx === board.idx
-          ? { ...item, likeCount: item.likeCount + 1 }
-          : item
-      );
-      setBoardList(updatedBoardList);
-    } catch (err) {
-      console.error("좋아요 증가 실패:", err);
     }
   };
 
@@ -160,16 +168,33 @@ const BoardList = () => {
   };
 
   const addNewPost = (newPost) => {
-    setBoardList([newPost, ...boardList]); // 새 게시글을 리스트 앞에 추가
+    setBoardList([newPost, ...boardList]);
   };
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearch = () => {
+    const filteredList = boardList.filter((board) =>
+      board.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setBoardList(filteredList);
   };
 
-  const filteredBoardList = boardList.filter((board) =>
-    board.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSortByViews = () => {
+    const sortedList = [...boardList].sort((a, b) => b.viewCount - a.viewCount);
+    setBoardList(sortedList);
+    setSortBy("views");
+  };
+
+  const handleSortByLikes = () => {
+    const sortedList = [...boardList].sort((a, b) => b.likeCount - a.likeCount);
+    setBoardList(sortedList);
+    setSortBy("likes");
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -181,25 +206,34 @@ const BoardList = () => {
   return (
     <BoardListBlock>
       <Title>Sports Service 게시글</Title>
-      <Button onClick={openWriteModal}>글쓰기</Button>
-      <SearchInput
-        type="text"
-        placeholder="검색어 입력"
-        value={searchQuery}
-        onChange={handleSearch}
-      />
+      {currentUser && ( // 사용자 로그인 확인
+        <Button onClick={openWriteModal}>글쓰기</Button>
+      )}
+      <div>
+        <SearchInput
+          type="text"
+          placeholder="검색어 입력"
+          value={searchQuery}
+          onKeyDown={handleKeyDown}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <SearchButton onClick={handleSearch}>검색</SearchButton>
+        <SortButton onClick={handleSortByViews}>조회수 정렬</SortButton>
+        <SortButton onClick={handleSortByLikes}>추천수 정렬</SortButton>
+      </div>
       <BoardListUl>
-        {filteredBoardList.map((board, board_num) => (
+        {boardList.map((board) => (
           <BoardListLi key={board.idx}>
             <Link to="#" onClick={() => openModal(board)}>
               <BoardItem>
-                <section className="idx">글번호: {board_num + 1}</section>
+                <section className="idx">글번호: {board.idx}</section>
                 <h2>{board.title}</h2>
                 <p>작성자: {board.writer}</p>
                 <p>내용: {board.content}</p>
-                <p>등록일: {board.reg_time}</p>
-                <p>조회수: {board.viewCount}</p>
-                <p>좋아요 수: {board.likeCount}</p>
+                <p>등록일: {board.reg_date}</p>
+                <p>수정일: {board.mod_date}</p>
+                <p>조회수: {board.view_count}</p>
+                <p>좋아요 수: {board.good_count}</p>
               </BoardItem>
             </Link>
           </BoardListLi>
@@ -210,13 +244,13 @@ const BoardList = () => {
           isOpen={isModalOpen}
           onClose={closeModal}
           board={selectedBoard}
-          currentUser={currentUser} // 현재 사용자 정보 전달
+          currentUser={currentUser}
         />
       )}
       <BoardWriteComponent
         isOpen={isWriteModalOpen}
         onClose={closeWriteModal}
-        addNewPost={addNewPost} // 새로운 게시글 추가 함수 전달
+        addNewPost={addNewPost}
       />
     </BoardListBlock>
   );
