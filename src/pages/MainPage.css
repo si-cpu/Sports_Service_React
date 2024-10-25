@@ -45,11 +45,11 @@
     font-size: 24px;
 }
 
-.community {
+.board {
     display: flex;
     background-color: #8e44ad;
     padding: 50px;
-    color: white;
+    color: red;
     text-align: center;
     font-size: 24px;
 }

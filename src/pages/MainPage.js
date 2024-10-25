@@ -1,6 +1,7 @@
 import React from "react";
-import NewsSection from "../components/NewsSection";
+import News from "./NewsList";
 import "./MainPage.css";
+import BoardList from "./BoardList";
 
 const MainPage = () => {
   return (
@@ -49,10 +50,14 @@ const MainPage = () => {
       </section>
       <section className="content-grid">
         <section className="news">
-          <NewsSection />
+          <News />
         </section>
         <section className="myTeam"></section>
-        <section className="board"></section>
+
+        <section className="board">
+          {" "}
+          <BoardList />
+        </section>
       </section>
     </div>
   );

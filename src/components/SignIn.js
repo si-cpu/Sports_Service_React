@@ -12,7 +12,7 @@ const LoginModal = ({ onClose }) => {
   };
 
   const mainPage = () => {
-    navigate("/Mainpage");
+    navigate("/");
     onClose();
   };
 
@@ -29,31 +29,31 @@ const LoginModal = ({ onClose }) => {
         nickname: nickname,
         password: password,
       };
-    
+
       const config = {
         headers: {
           "Content-Type": "application/json",
         },
         withCredentials: true,
       };
-    
+
       try {
         const response = await axios.post(url, data, config);
-        console.log('response: ', response);
-        console.log('success: ', response.data.success);
-  
-      if (response.status) {
-        setUser(response.data.user);
-        alert("로그인 성공!")
-        mainPage();
-      } else {
-        setError("닉네임과 비밀번호가 유효하지 않습니다.");
+        console.log("response: ", response);
+        console.log("success: ", response.data.success);
+
+        if (response.status) {
+          setUser(response.data.user);
+          alert("로그인 성공!");
+          mainPage();
+        } else {
+          setError("닉네임과 비밀번호가 유효하지 않습니다.");
+        }
+      } catch (error) {
+        setError("로그인 도중 오류가 발생했습니다. 관리자가 고치는 중입니다.");
       }
-    } catch (error) {
-      setError("로그인 도중 오류가 발생했습니다. 관리자가 고치는 중입니다.");
-    }
+    };
   };
-};
 
   return (
     <div className="modal-overlay" onClick={onClose}>

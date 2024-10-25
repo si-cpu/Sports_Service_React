@@ -7,6 +7,7 @@ import SignUp from "./pages/SignUp";
 import AccountModify from "./pages/AccountModify";
 import BoardList from "./pages/BoardList";
 import Header from "./components/Header";
+import TeamChoose from "./pages/TeamChoose";
 import "./App.css";
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/Board/list" element={<BoardList />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/account/modify" element={<AccountModify />} />
+            <Route path="/signup/teamchoose" element={<TeamChoose />} />
           </Routes>
         </main>
       </div>

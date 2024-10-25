@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./SignUp.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import TeamChoose from "./TeamChoose";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -196,7 +197,7 @@ const SignUp = () => {
       subAreas: [
         { num: 125, name: "인천 대한항공 점보스" },
         { num: 126, name: "천안 현대캐피탈 스카이워커스" },
-        { num: 127, name: "수원 한국전ㄴ력 VIXTORM" },
+        { num: 127, name: "수원 한국전력 VIXTORM" },
         { num: 128, name: "서울 우리카드 우리WON" },
         { num: 129, name: "안산 OK저축은행 읏맨" },
         { num: 130, name: "의정부 KB손해보험 스타즈" },
@@ -392,30 +393,31 @@ const SignUp = () => {
       email: email,
       password: password,
       nick_name: nickname,
-      // SelectedTeam: selectedTeam,
+      SelectedTeam: selectedTeam,
     };
-  
+
     const config = {
       headers: {
         "Content-Type": "application/json",
       },
       withCredentials: true,
     };
-  
+
     try {
       const response = await axios.post(url, data, config);
-      console.log('response: ', response);
-      console.log('success: ', response.data.success);
+      console.log("response: ", response);
+      console.log("success: ", response.data.success);
 
-      
-      if (response.status) {
+      if (response.status === "성공") {
         // 성공 처리
         console.log("Registration successful!", response.data);
-        navigate("/Mainpage");
+        alert("로그인 성공!");
+        navigate("/");
         // Do something with the response, like navigate to another page or update the UI
       } else {
         // 서버에서 성공하지 않았다는 응답을 받은 경우 처리
         console.error("Registration failed: ", response.data.message);
+        alert("닉네임과 비밀번호를 확인해주세요!");
         // Show error message to the user
       }
     } catch (err) {
@@ -424,12 +426,12 @@ const SignUp = () => {
       // Show error message to the user
     }
   };
-  
 
   return (
     <div className="signup-container">
       <div className="signup-box">
         <h1>Sports Service Sign-Up</h1>
+        <button onClick={navigate(TeamChoose)}>팀선택</button>
         <p>
           회원가입
           <br />
