@@ -1,12 +1,12 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./SignIn.css";
-import AuthContext from "../../src/auth-context";
+import AuthContext from "../../src/auth-context"; // AuthContext 가져오기
 
-const LoginModal = ({ onClose }) => {
+const SignIn = ({ onClose, onLoginSuccess }) => { // onLoginSuccess를 props로 추가
   const navigate = useNavigate();
-  const { setCurrentUser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext); // AuthContext 사용
 
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +14,6 @@ const LoginModal = ({ onClose }) => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Reset error message when inputs change
     setError("");
   }, [nickname, password]);
 
@@ -38,13 +37,13 @@ const LoginModal = ({ onClose }) => {
     };
     try {
       const response = await axios.post(url, data, config);
-      console.log("response: ", response);
       if (response.data === "success") {
-        setCurrentUser(true); // Update currentUser
+        login(); // 로그인 성공 시 로그인 상태 업데이트
+        onLoginSuccess(); // 로그인 성공 시 onLoginSuccess 호출
         alert("로그인 성공!");
-        resetForm(); // Reset form fields
-        navigate("/"); // Redirect to the main page
-        onClose(); // Close the modal
+        resetForm();
+        navigate("/"); // 로그인 후 메인 페이지로 이동
+        onClose();
       } else {
         setError("닉네임과 비밀번호가 유효하지 않습니다.");
       }
@@ -62,11 +61,7 @@ const LoginModal = ({ onClose }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button
-          className="close-button"
-          onClick={onClose}
-          aria-label="Close modal"
-        >
+        <button className="close-button" onClick={onClose} aria-label="Close modal">
           &times;
         </button>
         <form onSubmit={handleSubmit}>
@@ -106,12 +101,15 @@ const LoginModal = ({ onClose }) => {
           </div>
           {error && <p className="error">{error}</p>}
           <button type="submit" className="logIn">
-            Login
+            로그인
           </button>
           <button
             type="button"
             className="signup"
-            onClick={() => navigate("/SignUp")}
+            onClick={() => {
+              onClose(); // 모달 닫기
+              navigate("/SignUp"); // 회원가입 페이지로 이동
+            }}
           >
             회원가입
           </button>
@@ -121,4 +119,4 @@ const LoginModal = ({ onClose }) => {
   );
 };
 
-export default LoginModal;
+export default SignIn;

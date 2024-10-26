@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Modal from "react-modal";
 import axios from "axios";
+import  AuthContext  from "../auth-context"; // AuthContext 불러오기
 import "./BoardComponent.css"; // 스타일 불러오기
 
 const BASE_URL = "http://localhost:3306";
 
 const BoardComponent = ({ isOpen, onClose, board }) => {
+  const { currentUser } = useContext(AuthContext); // 현재 사용자 정보 가져오기
   const [title, setTitle] = useState(board.title);
   const [content, setContent] = useState(board.content);
   const [isEditing, setIsEditing] = useState(false);
@@ -14,31 +16,18 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   const [newComment, setNewComment] = useState(""); // 댓글 등록 로직
   const [editingComment, setEditingComment] = useState(null); // 수정 중인 댓글 상태 추가
   const [editingContent, setEditingContent] = useState(""); // 수정중인 댓글 내용
-  const [currentUser, setCurrentUser] = useState(null); // 현재 사용자 정보
 
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(
-          `${BASE_URL}/board/${board.idx}/comments`
-        );
+        const response = await axios.get(`${BASE_URL}/board/${board.idx}/comments`);
         setComments(response.data.comments);
       } catch (error) {
         console.error("Error fetching comments:", error);
       }
     };
 
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/currentUser`); // 현재 사용자 정보 요청
-        setCurrentUser(response.data.user);
-      } catch (error) {
-        console.error("Failed to fetch current user:", error);
-      }
-    };
-
     fetchComments();
-    fetchCurrentUser(); // 현재 사용자 정보 가져오기
   }, [board.idx]);
 
   // 게시글 수정 로직
@@ -96,13 +85,10 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
     }
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${BASE_URL}/board/${board.idx}/comments`,
-        {
-          content: newComment,
-          writer: currentUser,
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/board/${board.idx}/comments`, {
+        content: newComment,
+        writer: currentUser, // 작성자 설정
+      });
       if (response.data.success) {
         setComments([...comments, response.data.comment]);
         setNewComment("");
@@ -236,7 +222,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
             ) : (
               <>
                 <p>{comment.content}</p>
-                {currentUser === comment.writer && (
+                {currentUser === comment.writer && ( // 댓글 작성자만 버튼을 볼 수 있게 조건 추가
                   <>
                     <button
                       onClick={() => setEditingComment(comment.id)}
@@ -256,14 +242,18 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
             )}
           </div>
         ))}
-        <input
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          disabled={isLoading}
-        />
-        <button onClick={handleAddComment} disabled={isLoading}>
-          {isLoading ? "저장 중..." : "댓글 추가"}
-        </button>
+        {currentUser && ( // 로그인한 사용자만 댓글 작성란을 볼 수 있게 조건 추가
+          <>
+            <input
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              disabled={isLoading}
+            />
+            <button onClick={handleAddComment} disabled={isLoading}>
+              {isLoading ? "저장 중..." : "댓글 추가"}
+            </button>
+          </>
+        )}
       </div>
     </Modal>
   );

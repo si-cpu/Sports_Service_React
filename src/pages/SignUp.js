@@ -121,7 +121,7 @@ const SignUp = () => {
     }
     try {
       const response = await axios.post(
-        "http://192.168.0.175:8181/member/valid_email",
+        "http://localhost:8181/member/valid_email",
         { email }
       );
       if (response.data.isDuplicate) {
@@ -144,7 +144,7 @@ const SignUp = () => {
     }
     try {
       const response = await axios.post(
-        "http://192.168.0.175:8181/member/valid_id",
+        "http://localhost/member/valid_id",
         { nick_name: nickname }
       );
       if (response.data.isDuplicate) {
@@ -182,7 +182,7 @@ const SignUp = () => {
   };
 
   const postData = async () => {
-    const url = "http://192.168.0.175:8181/member/signup";
+    const url = "http://localhost:8181/member/signup";
     const data = {
       email: email,
       password: password,

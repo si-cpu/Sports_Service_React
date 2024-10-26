@@ -5,6 +5,7 @@ import axios from "axios";
 const BoardWriteComponent = ({ isOpen, onClose, addNewPost }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [nickname, setNickname] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {

@@ -209,7 +209,7 @@ const BoardList = () => {
   return (
     <BoardListBlock>
       <Title>Sports Service 게시글</Title>
-      {currentUser && <Button onClick={openWriteModal}>글쓰기</Button>}
+      {currentUser && <Button onClick={openWriteModal}>글쓰기</Button>} {/* 로그인 상태일 때만 보이도록 수정 */}
       <div>
         <SearchInput
           type="text"
@@ -236,10 +236,8 @@ const BoardList = () => {
                 <p>내용: {board.content}</p>
                 <p>등록일: {board.reg_date}</p>
                 <p>수정일: {board.mod_date}</p>
-                <p>조회수: {board.viewCount}</p>{" "}
-                {/* Ensure consistent casing */}
-                <p>좋아요 수: {board.likeCount}</p>{" "}
-                {/* Ensure consistent casing */}
+                <p>조회수: {board.viewCount}</p>
+                <p>좋아요 수: {board.likeCount}</p>
               </BoardItem>
             </Link>
           </BoardListLi>
