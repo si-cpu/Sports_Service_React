@@ -8,7 +8,6 @@ import SignUp from "./pages/SignUp";
 import Header from "./components/Header";
 import AccountModify from "./pages/AccountModify";
 import BoardComponent from "./components/BoardComponent";
-import Allteam from "./pages/teamdetail/Allteam";
 
 import TeamChoose from "./components/TeamChoose";
 
@@ -30,8 +29,7 @@ function App() {
               <Route path="/signup/teamchoose" element={<TeamChoose />} />
               <Route path="/account/modify" element={<AccountModify />} />
               <Route path="/board/list" element={<BoardList />} />
-              <Route path="/board/component" element={<BoardComponent />} />
-              <Route path="/allteam" element={<Allteam />} />
+              <Route path="/board/componenSt" element={<BoardComponent />} />
             </Routes>
           </main>
         </div>

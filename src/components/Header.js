@@ -9,6 +9,9 @@ import { useAuth } from "../auth-context";
 const Header = () => {
   const { isLoggedIn, userData, setIsLoggedIn } = useAuth();
 
+  const nickname = userData?.nick_name;
+  console.log(nickname);
+
   // 사이드바 클릭 액션
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
@@ -28,7 +31,6 @@ const Header = () => {
       if (response.data === "success") {
         alert("로그아웃되었습니다.");
         setIsLoggedIn(false); // 로그아웃 성공 시 상태 업데이트
-        console.log("2out");
       } else {
         alert("다시 시도해주세요.");
       }
@@ -57,7 +59,7 @@ const Header = () => {
             </button>
           ) : (
             <div className="user-info">
-              <span>환영합니다, {userData?.nickName}님</span>
+              <span>환영합니다, {nickname} 님</span>
               <button
                 onClick={logoutHandler}
                 className="icon-button logout-button"
