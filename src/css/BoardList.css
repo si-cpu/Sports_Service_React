@@ -1,0 +1,84 @@
+/* BoardList.css */
+.board-list-block {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    font-size: 2rem;
+    color: #343a40;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: calc(100% - 100px);
+    padding: 0.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.search-button,
+.sort-button,
+.button {
+    padding: 0.5rem;
+    margin-left: 10px;
+    background: #3b5998;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-button:hover,
+.sort-button:hover,
+.button:hover {
+    background: #3a5888;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.board-list-ul {
+    list-style: none;
+    padding: 0;
+}
+
+.board-list-li {
+    background: #ffffff;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.board-list-li:hover {
+    background: #e9ecef;
+}
+
+.board-list-li a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.board-item h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #495057;
+}
+
+.board-item p {
+    margin: 0.5rem 0;
+    color: #868e96;
+}

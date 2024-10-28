@@ -1,0 +1,78 @@
+.month-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 200px;
+    margin: 10px auto;
+}
+
+.month-selector button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.month-selector span {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 10px;
+    text-align: center;
+}
+
+.day-picker {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 10px;
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Chrome, Safari, Edge */
+.day-picker::-webkit-scrollbar {
+    display: none;
+}
+
+/* Firefox */
+.day-picker:hover {
+    scrollbar-width: thin;
+}
+
+/* Chrome, Safari, Edge */
+.day-picker:hover::-webkit-scrollbar {
+    display: block;
+    height: 8px;
+}
+
+/* 스크롤바 스타일 */
+.day-picker::-webkit-scrollbar {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.day-picker::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+}
+
+.days-list {
+    display: flex;
+    gap: 10px;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.day-item {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.day-item:hover {
+    background-color: #e0e0e0;
+}
+
+.day-item.selected {
+    background-color: #007bff;
+    color: white;
+}

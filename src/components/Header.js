@@ -1,50 +1,82 @@
-// src/components/Header.js
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "./Header.css";
+import axios from "axios";
+import "../css/Header.css";
 import SignIn from "./SignIn";
 import { FaUser, FaBars } from "react-icons/fa";
+import { useAuth } from "../auth-context";
 
 const Header = () => {
+    const { isLoggedIn, userData, setIsLoggedIn } = useAuth();
+
     // 사이드바 클릭 액션
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-    const toggleSidebar = () => {
-        setIsSidebarVisible(!isSidebarVisible);
-    };
+    const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const toggleLogin = () => setIsModalOpen(!isModalOpen);
 
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
+    const logoutHandler = async () => {
+        try {
+            const response = await axios.post(
+                "http://localhost:8181/member/logout",
+                {},
+                {
+                    withCredentials: true,
+                }
+            );
+
+            if (response.data === "success") {
+                alert("로그아웃되었습니다.");
+                window.location.reload();
+            } else {
+                alert("다시 시도해주세요.");
+            }
+        } catch (error) {
+            console.error("로그아웃 요청 중 오류 발생:", error);
+            setIsLoggedIn(false);
+        }
+    };
 
     return (
         <div>
             <header className="header">
                 <div className="header-left">
                     <Link to="/" className="logo">
-                        <img src="/logo.png" alt="Logo" />
+                        <img src="/local/logos/KBO.png" alt="Logo" />
                         <span className="header-title">Sports Service Test</span>
                     </Link>
                 </div>
 
                 <div className="header-right">
-                    {/* Login Button */}
-                    <button onClick={openModal} className="icon-button login-button">
-                        <FaUser />
-                        <span>로그인</span>
-                    </button>
+                    {/* 로그인 버튼 */}
+                    {!isLoggedIn ? (
+                        <button onClick={toggleLogin} className="icon-button login-button">
+                            <FaUser />
+                            <span>로그인</span>
+                        </button>
+                    ) : (
+                        <div className="user-info">
+                            <span>환영합니다, {userData?.nickName}님</span>
+                            <button onClick={logoutHandler} className="icon-button logout-button">
+                                로그아웃
+                            </button>
+                            <Link to="/account/modify" className="icon-button">
+                                정보 수정
+                            </Link>
+                        </div>
+                    )}
 
-                    {/* Conditionally render the LoginModal */}
-                    {isModalOpen && <SignIn onClose={closeModal} />}
+                    {isModalOpen && <SignIn toggleLogin={toggleLogin} />}
 
-                    {/* Menu Button */}
+                    {/* 사이드바 */}
                     <button className="icon-button menu-button" onClick={toggleSidebar}>
                         <FaBars />
                     </button>
                 </div>
             </header>
 
-            {/* Sidebar: Appears on the right when toggled */}
+            {/* Sidebar:  */}
             <div className={`sidebar ${isSidebarVisible ? "visible" : ""}`}>
                 <nav>
                     <ul>

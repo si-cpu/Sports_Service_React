@@ -1,0 +1,75 @@
+/* modal.css */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    width: 300px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+h1 {
+    color: black;
+    text-align: center;
+}
+
+h3 {
+    color: black;
+    text-align: center;
+}
+
+h2 {
+    color: black;
+    text-align: center;
+}
+
+label {
+    color: black;
+}
+
+.signup {
+    width: 50%;
+    background-color: gainsboro;
+    text-align: center;
+    flex: auto;
+    align-content: center;
+    margin: 10px;
+    border: 2px solid black;
+    color: black;
+    text-decoration: none;
+}
+
+.logIn {
+    width: 50%;
+    background-color: gainsboro;
+    text-align: center;
+    flex: auto;
+    align-content: center;
+    margin: 10px;
+    border: 2px solid black;
+}
+
+.log-sign-btn {
+    display: flex;
+}

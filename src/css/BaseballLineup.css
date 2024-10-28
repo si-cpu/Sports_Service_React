@@ -1,0 +1,59 @@
+.lineup-container {
+    width: 90%;
+    margin: 20px auto;
+}
+
+.starting-lineup {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.team-lineup {
+    width: 45%;
+}
+
+.players-list {
+    margin-top: 20px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.player-number {
+    font-weight: bold;
+    color: #ff5722;
+    margin-right: 10px;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-weight: bold;
+}
+
+.substitutes-bullpen {
+    display: flex;
+    justify-content: space-between;
+}
+
+.team-subs {
+    width: 45%;
+}
+
+.sub-player,
+.bullpen-player {
+    margin-bottom: 8px;
+}
+
+h2,
+h3 {
+    text-align: left;
+    margin-bottom: 10px;
+}

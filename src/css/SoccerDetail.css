@@ -1,0 +1,127 @@
+body {
+    font-family: "Arial", sans-serif;
+    background-color: #f8f9fa;
+}
+
+.scoreboard {
+    background-color: #252a37;
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.team-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.team-logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.team-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-score {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 0 20px;
+}
+
+.status {
+    font-size: 16px;
+    padding: 5px 10px;
+    background-color: #4b67c4;
+    border-radius: 10px;
+}
+
+.match-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.date-time,
+.stadium {
+    font-size: 16px;
+}
+
+.goal-table {
+    display: flex;
+    background-color: #2f3e5a;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.tab.active {
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+.tab-content {
+    margin-top: 20px;
+}
+
+.team-goals {
+    width: 100%;
+    padding: 20px;
+    background-color: #2b3e55;
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+.home-team-goal {
+    text-align: left;
+    padding-left: 10px;
+}
+
+.away-team-goal {
+    text-align: right;
+    padding-right: 10px;
+}
+
+.goal-scorer {
+    align-items: center;
+    color: white;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.goal-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+div .goal-separator {
+    width: 10px;
+    background-color: white;
+    height: 100%;
+}
