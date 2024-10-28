@@ -1,235 +1,224 @@
 import React, { useState, useEffect } from "react";
-import "./AccountModify.css";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import TeamChoose from "./TeamChoose"; // Import TeamChoose component
+import TeamChoose from "../components/TeamChoose";
+import "../css/AccountModify.css";
+import { useAuth } from "../auth-context";
 
 const AccountModify = () => {
-  const [email, setEmail] = useState("");
-  const [isEmailValid, setIsEmailValid] = useState(null);
-  const [emailError, setEmailError] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isPasswordMatch, setIsPasswordMatch] = useState(true);
-  const [nickname, setNickname] = useState("");
-  const [isNicknameValid, setIsNicknameValid] = useState(null);
-  const [selectedTeams, setSelectedTeams] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [generalError, setGeneralError] = useState("");
+    const navigate = useNavigate();
+    const { isLoggedIn, userData, setIsLoggedIn } = useAuth();
 
-  // Fetch user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("/api/user-profile");
-        const data = response.data;
-        setEmail(data.email);
-        setNickname(data.nickname);
-        setSelectedTeams(data.teams);
-      } catch (error) {
-        setGeneralError("사용자 정보를 불러오는 데 실패했습니다.");
-        console.error("Error fetching user data:", error);
-      }
+    // 이메일 값, 이메일 중복 여부, 이메일 형식 오류 여부
+    const [email, setEmail] = useState(userData.email);
+    const [isEmailValid, setIsEmailValid] = useState(null);
+    const [emailError, setEmailError] = useState("");
+
+    // 비밀번호 값 및 비밀번호 강도
+    const [password, setPassword] = useState("");
+    const [passwordStrength, setPasswordStrength] = useState("");
+
+    // 비밀번호 확인
+    const [isPasswordMatch, setIsPasswordMatch] = useState(true);
+    const [checkPassword, setCheckPassword] = useState("");
+
+    // 닉네임 값, 닉네임 형식 오류 여부
+    const [nickname, setNickname] = useState(userData.nickName);
+    const [isNicknameValid, setIsNicknameValid] = useState(null);
+
+    // 팀 선택 값
+    const [selectedTeams, setSelectedTeams] = useState({
+        KBO: userData.kboTeam,
+        MLB: userData.mlbTeam,
+        "K-League": userData.klTeam,
+        "Premier League": userData.plTeam,
+        KBL: userData.kblTeam,
+        NBA: userData.nbaTeam,
+        "V - League 남자부": userData.vmanTeam,
+        "V - League 여자부": userData.vwoTeam,
+    });
+
+    // 입력값 세팅
+    const emailHandeler = (e) => {
+        setEmail(e.target.value);
+        emailCheckHandeler(e.target.value);
     };
-    fetchUserData();
-  }, []);
 
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordHandler = (e) => {
+        setPassword(e.target.value);
+        checkPasswordStrength(e.target.value);
+    };
 
-  const handleEmailChange = (e) => {
-    const emailValue = e.target.value;
-    setEmail(emailValue);
-    if (!emailRegex.test(emailValue)) {
-      setIsEmailValid(false);
-      setEmailError("유효하지 않은 이메일 형식입니다.");
-    } else {
-      setIsEmailValid(null);
-      setEmailError("");
-    }
-  };
+    const passwordCheckHandler = (e) => {
+        setCheckPassword(e.target.value);
+        setIsPasswordMatch(e.target.value === password);
+    };
 
-  const checkEmailDuplicate = async () => {
-    if (!email || isEmailValid === false) {
-      alert("유효한 이메일을 입력하세요.");
-      return;
-    }
-    try {
-      const response = await axios.post("/api/check-email", { email });
-      setIsEmailValid(!response.data.isDuplicate);
-      alert(
-        response.data.isDuplicate
-          ? "이미 사용 중인 이메일입니다."
-          : "사용 가능한 이메일입니다."
-      );
-    } catch (error) {
-      setGeneralError("이메일 중복 확인 중 오류가 발생했습니다.");
-      console.error("Error checking email:", error);
-    }
-  };
+    const nicknameHandler = (e) => {
+        setNickname(e.target.value);
+        setIsNicknameValid(null);
+    };
 
-  const handlePasswordChange = (e) => {
-    const passwordValue = e.target.value;
-    setPassword(passwordValue);
-    // Assuming a function to evaluate password strength exists
-    // setPasswordStrength(evaluatePasswordStrength(passwordValue));
-  };
+    // 이메일 형식 유효성 검사
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailCheckHandeler = (email) => {
+        if (!emailRegex.test(email)) {
+            setIsEmailValid(false);
+            if (email === "") {
+                setEmailError("");
+            } else {
+                setEmailError("유효하지 않은 이메일 형식입니다.");
+            }
+        } else {
+            // 중복검사까지 완료 해야 true로 바꿔줌
+            setIsEmailValid(null);
+            setEmailError("");
+        }
+    };
 
-  const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
-    setIsPasswordMatch(e.target.value === password);
-  };
+    // 비밀번호 강도 체크
+    const checkPasswordStrength = (password) => {
+        let strength = "";
 
-  const handleNicknameChange = (e) => {
-    setNickname(e.target.value);
-    setIsNicknameValid(null);
-  };
+        if (password.length === 0) {
+            strength = "";
+        } else if (password.length < 8) {
+            strength = "비밀번호는 8자 이상이어야 합니다.";
+        } else {
+            let strengthLevel = 0;
+            // 소문자 영어 포함
+            if (/[a-z]/.test(password)) strengthLevel++;
+            // 대문자 영어 포함
+            if (/[A-Z]/.test(password)) strengthLevel++;
+            // 숫자 포함
+            if (/\d/.test(password)) strengthLevel++;
+            // 특수문자 포함
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strengthLevel++;
 
-  const checkNicknameDuplicate = async () => {
-    if (!nickname || isNicknameValid === false) {
-      alert("유효한 닉네임을 입력하세요.");
-      return;
-    }
-    try {
-      const response = await axios.post("/api/check-nickname", { nickname });
-      setIsNicknameValid(!response.data.isDuplicate);
-      alert(
-        response.data.isDuplicate
-          ? "이미 사용 중인 닉네임입니다."
-          : "사용 가능한 닉네임입니다."
-      );
-    } catch (error) {
-      setGeneralError("닉네임 중복 확인 중 오류가 발생했습니다.");
-      console.error("Error checking nickname:", error);
-    }
-  };
+            switch (strengthLevel) {
+                case 2:
+                    strength = "보통";
+                    break;
+                case 3:
+                    strength = "강함";
+                    break;
+                case 4:
+                    strength = "매우 강함";
+                    break;
+                default:
+                    strength = "약함";
+                    break;
+            }
+        }
+        setPasswordStrength(strength);
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    // 이메일 중복 체크
+    const checkEmailDuplicate = async () => {
+        if (!email || isEmailValid === false) {
+            alert("유효한 이메일을 입력하세요.");
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:8181/member/valid_email", {
+                email,
+            });
 
-    if (!isPasswordMatch) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
+            if (response.data === "notExist") {
+                setIsEmailValid(true);
+                alert("사용 가능한 이메일입니다.");
+            } else if (response.data === "exist") {
+                setIsEmailValid(false);
+                alert("이미 사용 중인 이메일입니다.");
+            }
+        } catch (error) {
+            console.error("이메일 중복 확인 중 오류 발생:", error);
+        }
+    };
 
-    try {
-      const response = await axios.post("/api/update-profile", {
-        email,
-        password,
-        nickname,
-        teams: selectedTeams,
-      });
-      if (response.data.success) {
-        alert("정보가 성공적으로 수정되었습니다.");
-      } else {
-        alert("정보 수정에 실패했습니다.");
-      }
-    } catch (error) {
-      setGeneralError("정보 수정 중 오류가 발생했습니다.");
-      console.error("Error updating profile:", error);
-    }
-  };
+    // 닉네임 중복 체크
+    const checkNicknameDuplicate = async () => {
+        if (!nickname || isNicknameValid === false || nickname.length < 2) {
+            alert("유효한 닉네임을 입력하세요.");
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:8181/member/valid_id", {
+                nick_name: nickname,
+            });
 
-  const handleTeamSelect = (team, league) => {
-    setSelectedTeams((prevTeams) => ({
-      ...prevTeams,
-      [league]: team,
-    }));
-  };
+            if (response.data === "notExist") {
+                setIsNicknameValid(true);
+                alert("사용 가능한 닉네임입니다.");
+            } else {
+                setIsNicknameValid(false);
+                alert("이미 사용 중인 닉네임입니다.");
+            }
+        } catch (error) {
+            console.error("닉네임 중복 확인 중 오류 발생:", error);
+        }
+    };
 
-  return (
-    <div className="account-modify-container">
-      <div className="account-modify-box">
-        <h1>정보 수정</h1>
-        {generalError && <p className="error">{generalError}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label>이메일 수정</label>
-            <input
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="이메일 입력"
-              required
-            />
-            <button
-              type="button"
-              className="check-button"
-              onClick={checkEmailDuplicate}
-            >
-              중복확인
-            </button>
-          </div>
-          {emailError && <p className="error">{emailError}</p>}
-          {isEmailValid === true && (
-            <p className="success">사용 가능한 이메일입니다.</p>
-          )}
+    const submitHandler = (e) => {
+        e.preventDefault();
 
-          <div className="input-group">
-            <label>비밀번호 수정 (원하는 경우만 입력)</label>
-            <input
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              placeholder="새 비밀번호 입력 (8~20자)"
-            />
-          </div>
+        // 이메일 상태 확인
+        if (!email || isEmailValid !== true) {
+            alert("이메일을 확인해주세요.");
+            return;
+        }
 
-          <div className="input-group">
-            <label>비밀번호 재입력</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              placeholder="새 비밀번호 재입력"
-            />
-          </div>
-          {!isPasswordMatch && (
-            <p className="error">비밀번호가 일치하지 않습니다.</p>
-          )}
+        // 비밀번호 상태 확인
+        if (!password || !isPasswordMatch) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
 
-          <div className="input-group">
-            <label>닉네임 수정</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={handleNicknameChange}
-              placeholder="닉네임 입력"
-              required
-            />
-            <button
-              type="button"
-              className="check-button"
-              onClick={checkNicknameDuplicate}
-            >
-              중복확인
-            </button>
-          </div>
+        // 닉네임 상태 확인
+        if (!nickname || !isNicknameValid) {
+            alert("닉네임을 확인해주세요.");
+            return;
+        }
 
-          {isNicknameValid === false && (
-            <p className="error">이미 사용 중인 닉네임입니다.</p>
-          )}
-          {isNicknameValid === true && (
-            <p className="success">사용 가능한 닉네임입니다.</p>
-          )}
+        if (Object.values(selectedTeams).every((team) => team === null)) {
+            const confirmRes = window.confirm("팀 선택없이 가입하시겠습니까?");
+            if (confirmRes) {
+                // postData();
+            }
+            return;
+        }
+        // postData();
+    };
 
-          <button type="button" onClick={() => setIsModalOpen(true)}>
-            팀 선택
-          </button>
-
-          <button type="submit" className="submit-button">
-            정보 수정
-          </button>
-        </form>
-      </div>
-
-      {isModalOpen && (
-        <TeamChoose
-          onClose={() => setIsModalOpen(false)}
-          onTeamSelect={handleTeamSelect}
-        />
-      )}
-    </div>
-  );
+    return (
+        <div className="account-modify-container">
+            <div className="account-modify-box">
+                <h1>정보 수정</h1>
+                {email}
+                <br></br>
+                {password}
+                <br></br>
+                {nickname}
+                <br></br>
+                {selectedTeams.KBO}
+                <br></br>
+                {selectedTeams.MLB}
+                <br></br>
+                {selectedTeams["K-League"]}
+                <br></br>
+                {selectedTeams["Premier League"]}
+                <br></br>
+                {selectedTeams.KBL}
+                <br></br>
+                {selectedTeams.NBA}
+                <br></br>
+                {selectedTeams["V - League 남자부"]}
+                <br></br>
+                {selectedTeams["V - League 여자부"]}
+                <br></br>
+            </div>
+        </div>
+    );
 };
 
 export default AccountModify;

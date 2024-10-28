@@ -1,20 +1,4 @@
-/* Header Styling */
-.header {
-    display: flex;
-    justify-content: space-between; /* Space out left and right sections */
-    align-items: center;
-    background-color: #0f1e2d; /* Dark background */
-    color: white;
-    padding: 10px 20px;
-    height: 60px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%; /* Full width header */
-    z-index: 1000;
-}
-
-/* Main content padding to prevent overlap */
 .main-content {
-    padding-top: 80px; /* Add padding to make room for the fixed header */
+    padding-top: 80px;
+    top: 60px;
 }

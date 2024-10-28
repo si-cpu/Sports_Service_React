@@ -1,0 +1,93 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #0f1e2d;
+    padding: 10px 20px;
+    height: 50px;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+.header-left {
+    display: flex;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.icon-button {
+    display: flex;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    margin-left: 15px;
+    align-items: center;
+}
+
+.icon-button span {
+    margin-left: 10px;
+}
+
+.login-button {
+    font-size: 18px;
+    margin-right: 15px;
+}
+
+.menu-button {
+    font-size: 24px;
+    margin-right: 50px;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 60px;
+    right: -300px;
+    width: 200px;
+    height: 100%;
+    background-color: #f4f4f4;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease;
+    z-index: 999;
+}
+
+.sidebar.visible {
+    right: 0;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 10px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}

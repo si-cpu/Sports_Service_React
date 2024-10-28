@@ -1,0 +1,70 @@
+.game-list {
+    padding: 20px;
+}
+
+/* 스크롤바 공통 스타일 */
+.scroll-container {
+    display: flex;
+    overflow-x: auto; /* 자동 가로 스크롤 */
+    white-space: nowrap; /* 한 줄에 모든 요소 배치 */
+    padding: 10px;
+    gap: 10px; /* 버튼 간격 */
+    scroll-behavior: smooth; /* 부드러운 스크롤 */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* 버튼 스타일 */
+.scroll-container button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: rgb(55, 165, 103);
+    color: white;
+    font-size: 14px;
+}
+
+.scroll-container button:hover {
+    background-color: rgb(39, 100, 65);
+    color: white;
+}
+
+.scroll-container button.active {
+    background-color: rgb(39, 100, 65);
+}
+
+/* 기본적으로 스크롤바 숨기기 */
+.scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Firefox */
+.scroll-container:hover {
+    scrollbar-width: thin;
+}
+
+/* Chrome, Safari, Opera */
+.scroll-container:hover::-webkit-scrollbar {
+    display: block;
+    height: 8px;
+}
+
+/* 스크롤바 스타일 */
+.scroll-container::-webkit-scrollbar {
+    background: rgba(0, 0, 0, 0.1); /* 스크롤바 배경 */
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.5); /* 스크롤바 색상 */
+    border-radius: 4px;
+}
+
+.sport-selection,
+.league-selection,
+.team-selection {
+    height: 50px;
+    align-items: center;
+    padding-left: 20px;
+}

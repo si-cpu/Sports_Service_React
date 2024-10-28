@@ -1,120 +1,27 @@
-import React, { useState, useEffect, useMemo, useContext } from "react";
+// BoardList.js
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import styled from "styled-components";
-import BoardWriteComponent from "../components/BoardWriteComponent";
+import BoardWrite from "../components/BoardWrite";
 import BoardComponent from "../components/BoardComponent";
-import AuthContext from "../auth-context";
+import { useAuth } from "../auth-context";
+import "../css/BoardList.css";
 
 const API_URL = "http://localhost:8181/board";
 
-const BoardListBlock = styled.div`
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  color: #343a40;
-  text-align: center;
-  margin-bottom: 1.5rem;
-`;
-
-const SearchInput = styled.input`
-  width: calc(100% - 100px);
-  padding: 0.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 1rem;
-`;
-
-const SearchButton = styled.button`
-  padding: 0.5rem;
-  margin-left: 10px;
-  background: #3b5998;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: #3a5888;
-  }
-`;
-
-const SortButton = styled.button`
-  margin-left: 10px;
-  padding: 0.5rem;
-  background: #3b5998;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: #3a5888;
-  }
-`;
-
-const Button = styled.button`
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1.25rem;
-  background: #3b5998;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 1.5rem;
-  &:hover {
-    background: #3a5888;
-  }
-`;
-
-const BoardListUl = styled.ul`
-  list-style: none;
-  padding: 0;
-`;
-
-const BoardListLi = styled.li`
-  background: #ffffff;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  &:hover {
-    background: #e9ecef;
-  }
-  a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-  }
-`;
-
-const BoardItem = styled.div`
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: #495057;
-  }
-  p {
-    margin: 0.5rem 0;
-    color: #868e96;
-  }
-`;
-
 const BoardList = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { isLoggedIn, userData } = useAuth();
+
   const [boardList, setBoardList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
+  const toggleWriteModal = () => {
+    getBoardList(); // 서버에서 최신 게시글 목록을 다시 가져와 렌더링
+    setIsWriteModalOpen(!isWriteModalOpen);
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("none");
@@ -122,9 +29,10 @@ const BoardList = () => {
   const getBoardList = async () => {
     try {
       const response = await axios.get(`${API_URL}/find_all`);
+      console.log("Fetched Board List:", response.data); // 데이터 확인
       setBoardList(response.data);
     } catch (err) {
-      setError("게시글 불러오는데 실패했습니다.");
+      alert("게시글 불러오는데 실패했습니다.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -137,9 +45,11 @@ const BoardList = () => {
 
   const increaseViewCount = async (board) => {
     try {
-      await axios.post(`${API_URL}/findall/${board.idx}/increaseViewCount`);
+      await axios.post(
+        `${API_URL}/findall/${board.board_num}/increaseViewCount`
+      );
       const updatedBoardList = boardList.map((item) =>
-        item.idx === board.idx
+        item.idx === board.board_num
           ? { ...item, viewCount: item.viewCount + 1 }
           : item
       );
@@ -155,17 +65,11 @@ const BoardList = () => {
     setIsModalOpen(true);
   };
 
+  // 모달을 닫으면서 서버에서 게시글 목록을 다시 받아옴
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedBoard(null);
-  };
-
-  const openWriteModal = () => {
-    setIsWriteModalOpen(true);
-  };
-
-  const closeWriteModal = () => {
-    setIsWriteModalOpen(false);
+    getBoardList(); // 서버에서 최신 게시글 목록을 다시 가져와 렌더링
   };
 
   const addNewPost = (newPost) => {
@@ -197,40 +101,45 @@ const BoardList = () => {
     return <div>Loading...</div>;
   }
 
-  if (error) {
-    return (
-      <div>
-        {error}
-        <button onClick={getBoardList}>Retry</button>
-      </div>
-    );
-  }
-
   return (
-    <BoardListBlock>
-      <Title>Sports Service 게시글</Title>
-      {currentUser && <Button onClick={openWriteModal}>글쓰기</Button>} {/* 로그인 상태일 때만 보이도록 수정 */}
+    <div className="board-list-block">
+      <h1 className="title">Sports Service 게시글</h1>
+      {isLoggedIn && (
+        <button className="button" onClick={toggleWriteModal}>
+          글쓰기
+        </button>
+      )}
+
       <div>
-        <SearchInput
+        <input
           type="text"
+          className="search-input"
           placeholder="검색어 입력"
           value={searchQuery}
           onKeyDown={handleKeyDown}
           onChange={(e) => setSearchQuery(e.target.value)}
           aria-label="Search posts"
         />
-        <SearchButton onClick={() => setSearchQuery(searchQuery)}>
+        <button
+          className="search-button"
+          onClick={() => setSearchQuery(searchQuery)}
+        >
           검색
-        </SearchButton>
-        <SortButton onClick={() => setSortBy("views")}>조회수 정렬</SortButton>
-        <SortButton onClick={() => setSortBy("likes")}>추천수 정렬</SortButton>
+        </button>
+        <button className="sort-button" onClick={() => setSortBy("views")}>
+          조회수 정렬
+        </button>
+        <button className="sort-button" onClick={() => setSortBy("likes")}>
+          추천수 정렬
+        </button>
       </div>
-      <BoardListUl>
+
+      <ul className="board-list-ul">
         {filteredAndSortedBoardList.map((board) => (
-          <BoardListLi key={board.idx}>
+          <li key={board.idx} className="board-list-li">
             <Link to="#" onClick={() => openModal(board)}>
-              <BoardItem>
-                <section className="idx">글번호: {board.idx}</section>
+              <div className="board-item">
+                <section className="idx">글번호: {board.board_num}</section>
                 <h2>{board.title}</h2>
                 <p>작성자: {board.writer}</p>
                 <p>내용: {board.content}</p>
@@ -238,25 +147,27 @@ const BoardList = () => {
                 <p>수정일: {board.mod_date}</p>
                 <p>조회수: {board.viewCount}</p>
                 <p>좋아요 수: {board.likeCount}</p>
-              </BoardItem>
+              </div>
             </Link>
-          </BoardListLi>
+          </li>
         ))}
-      </BoardListUl>
+      </ul>
+
       {selectedBoard && (
         <BoardComponent
           isOpen={isModalOpen}
           onClose={closeModal}
           board={selectedBoard}
-          currentUser={currentUser}
+          writer={userData.nick_name}
         />
       )}
-      <BoardWriteComponent
-        isOpen={isWriteModalOpen}
-        onClose={closeWriteModal}
-        addNewPost={addNewPost}
+
+      <BoardWrite
+        isWriteModalOpen={isWriteModalOpen}
+        toggleWriteModal={toggleWriteModal}
+        onSave={addNewPost} // 작성 후 리스트에 추가하는 콜백 함수 전달
       />
-    </BoardListBlock>
+    </div>
   );
 };
 

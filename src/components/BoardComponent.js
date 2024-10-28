@@ -1,34 +1,39 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
-import  AuthContext  from "../auth-context"; // AuthContext 불러오기
+import { useAuth } from "../auth-context";
 import "./BoardComponent.css"; // 스타일 불러오기
 
-const BASE_URL = "http://localhost:3306";
+const BASE_URL = "http://localhost:8181";
 
 const BoardComponent = ({ isOpen, onClose, board }) => {
-  const { currentUser } = useContext(AuthContext); // 현재 사용자 정보 가져오기
+  const { isLoggedIn, userData } = useAuth();
+  const nickname = userData?.nickname;
   const [title, setTitle] = useState(board.title);
+  const [board_num, setBoard_num] = useState(board.board_num);
   const [content, setContent] = useState(board.content);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
-  const [comments, setComments] = useState([]); // 댓글 조회 MAP 로직
-  const [newComment, setNewComment] = useState(""); // 댓글 등록 로직
-  const [editingComment, setEditingComment] = useState(null); // 수정 중인 댓글 상태 추가
-  const [editingContent, setEditingContent] = useState(""); // 수정중인 댓글 내용
+  const [isLoading, setIsLoading] = useState(false);
+  const [reply, setReply] = useState([]);
+  const [newReply, setNewReply] = useState("");
+  const [editingReply, setEditingReply] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
 
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/board/${board.idx}/comments`);
-        setComments(response.data.comments);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
+    fetchReply();
+  }, [board_num]);
 
-    fetchComments();
-  }, [board.idx]);
+  // 댓글 목록 불러오기 함수
+  const fetchReply = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/reply/find_all/${board_num}`
+      );
+      setReply(response.data || []);
+    } catch (error) {
+      console.error("Error fetching reply:", error);
+    }
+  };
 
   // 게시글 수정 로직
   const handleEdit = async () => {
@@ -39,12 +44,19 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.put(`${BASE_URL}/board/${board.idx}`, {
-        title,
-        content,
-      });
+      const response = await axios.put(
+        `${BASE_URL}/board/modify`,
+        {
+          title: title,
+          content: content,
+          board_num: board_num,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
-      if (response.data.success) {
+      if (response.data === "success") {
         alert("게시글이 수정되었습니다.");
         onClose();
       } else {
@@ -59,11 +71,18 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   };
 
   // 게시글 삭제 로직
-  const handleDelete = async () => {
+  const handleDeleteContent = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.delete(`${BASE_URL}/board/${board.idx}`);
-      if (response.data.success) {
+      const response = await axios.delete(
+        `${BASE_URL}/board/delete/${board_num}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log(board_num);
+      if (response.data === "success") {
         alert("게시글이 삭제되었습니다.");
         onClose();
       } else {
@@ -72,31 +91,40 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("게시글 삭제 중 오류가 발생했습니다.");
+      console.log(board_num);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 댓글 등록 로직
-  const handleAddComment = async () => {
-    if (!newComment) {
+  // 댓글 추가 로직
+  const handleAddReply = async () => {
+    if (!newReply) {
       alert("댓글 내용을 입력해 주세요.");
       return;
     }
     setIsLoading(true);
     try {
-      const response = await axios.post(`${BASE_URL}/board/${board.idx}/comments`, {
-        content: newComment,
-        writer: currentUser, // 작성자 설정
-      });
-      if (response.data.success) {
-        setComments([...comments, response.data.comment]);
-        setNewComment("");
+      const response = await axios.post(
+        `${BASE_URL}/reply/save`,
+        {
+          content: newReply,
+          board_num: board_num,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data === "success") {
+        alert("댓글이 등록되었습니다.");
+        setNewReply("");
+        fetchReply(); // 댓글 목록 다시 불러오기
       } else {
         alert("댓글 추가에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Error adding comment:", error);
+      console.error("Error adding reply:", error);
       alert("댓글 추가 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -104,17 +132,22 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   };
 
   // 댓글 삭제 로직
-  const handleDeleteComment = async (commentId) => {
+  const handleDeleteReply = async (reply_num) => {
     setIsLoading(true);
     try {
-      const response = await axios.delete(`${BASE_URL}/comments/${commentId}`);
-      if (response.data.success) {
-        setComments(comments.filter((comment) => comment.id !== commentId));
+      const response = await axios.delete(
+        `${BASE_URL}/reply/delete/${reply_num}`,
+        {
+          withCredentials: true,
+        }
+      );
+      if (response.data === "success") {
+        fetchReply(); // 댓글 목록 다시 불러오기
       } else {
         alert("댓글 삭제에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      console.error("Error deleting reply:", error);
       alert("댓글 삭제 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -122,31 +155,27 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   };
 
   // 댓글 수정 로직
-  const handleEditComment = async (commentId) => {
+  const handleEditReply = async (reply_num) => {
     if (!editingContent) {
       alert("댓글 내용을 입력해 주세요.");
       return;
     }
     setIsLoading(true);
     try {
-      const response = await axios.put(`${BASE_URL}/comments/${commentId}`, {
+      const response = await axios.put(`${BASE_URL}/reply/modify`, {
+        reply_num,
         content: editingContent,
+        writer: nickname,
       });
-      if (response.data.success) {
-        setComments(
-          comments.map((comment) =>
-            comment.id === commentId
-              ? { ...comment, content: editingContent }
-              : comment
-          )
-        );
-        setEditingComment(null);
+      if (response.data === "success") {
+        fetchReply(); // 댓글 목록 다시 불러오기
+        setEditingReply(null);
         setEditingContent("");
       } else {
         alert("댓글 수정에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Error editing comment:", error);
+      console.error("Error editing reply:", error);
       alert("댓글 수정 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -160,12 +189,12 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={isLoading} // 로딩 중이면 입력 필드 비활성화
+            disabled={isLoading}
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            disabled={isLoading} // 로딩 중이면 입력 필드 비활성화
+            disabled={isLoading}
           />
           <button onClick={handleEdit} disabled={isLoading}>
             {isLoading ? "저장 중..." : "저장"}
@@ -179,12 +208,12 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
           <h2>{board.title}</h2>
           <p>작성자: {board.writer}</p>
           <p>{board.content}</p>
-          {currentUser === board.writer && ( // 작성자만 버튼을 볼 수 있게 조건 추가
+          {userData.nick_name === board.writer && (
             <>
               <button onClick={() => setIsEditing(true)} disabled={isLoading}>
                 수정
               </button>
-              <button onClick={handleDelete} disabled={isLoading}>
+              <button onClick={handleDeleteContent} disabled={isLoading}>
                 {isLoading ? "삭제 중..." : "삭제"}
               </button>
             </>
@@ -194,65 +223,72 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       <button onClick={onClose} disabled={isLoading}>
         닫기
       </button>
-
-      <div className="comments-section">
+      <div className="reply-section">
         <h3>댓글</h3>
-        {comments.map((comment) => (
-          <div key={comment.id} className="comment">
-            {editingComment === comment.id ? (
-              <>
-                <textarea
-                  value={editingContent}
-                  onChange={(e) => setEditingContent(e.target.value)}
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={() => handleEditComment(comment.id)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "저장 중..." : "저장"}
-                </button>
-                <button
-                  onClick={() => setEditingComment(null)}
-                  disabled={isLoading}
-                >
-                  취소
-                </button>
-              </>
-            ) : (
-              <>
-                <p>{comment.content}</p>
-                {currentUser === comment.writer && ( // 댓글 작성자만 버튼을 볼 수 있게 조건 추가
-                  <>
-                    <button
-                      onClick={() => setEditingComment(comment.id)}
-                      disabled={isLoading}
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      disabled={isLoading}
-                    >
-                      삭제
-                    </button>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        ))}
-        {currentUser && ( // 로그인한 사용자만 댓글 작성란을 볼 수 있게 조건 추가
+        {reply.length > 0 ? (
+          reply.map((replyItem) => (
+            <div key={replyItem.reply_num} className="reply">
+              {editingReply === replyItem.reply_num ? (
+                <>
+                  <textarea
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={() => handleEditReply(replyItem.reply_num)}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "저장 중..." : "저장"}
+                  </button>
+                  <button
+                    onClick={() => setEditingReply(null)}
+                    disabled={isLoading}
+                  >
+                    취소
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>{replyItem.content}</p>
+                  <p>작성자: {replyItem.writer}</p>
+                  {userData.nick_name === replyItem.writer && (
+                    <>
+                      <button
+                        onClick={() => setEditingReply(replyItem.reply_num)}
+                        disabled={isLoading}
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReply(replyItem.reply_num)}
+                        disabled={isLoading}
+                      >
+                        삭제
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>등록된 댓글이 없습니다.</p>
+        )}
+        {isLoggedIn ? (
           <>
             <input
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
               disabled={isLoading}
+              placeholder="댓글을 입력하세요..."
             />
-            <button onClick={handleAddComment} disabled={isLoading}>
+            <button onClick={handleAddReply} disabled={isLoading}>
               {isLoading ? "저장 중..." : "댓글 추가"}
             </button>
           </>
+        ) : (
+          <p>댓글을 작성하려면 로그인이 필요합니다.</p>
         )}
       </div>
     </Modal>

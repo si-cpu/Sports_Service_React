@@ -1,30 +1,49 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 
-// AuthContext 생성
 const AuthContext = createContext();
 
-// AuthProvider 컴포넌트
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  const login = () => {
-    setIsLoggedIn(true); // 로그인 처리
-  };
+    useEffect(() => {
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get("http://localhost:8181/member/check_login", {
+                    withCredentials: true,
+                });
 
-  const logout = () => {
-    setIsLoggedIn(false); // 로그아웃 처리
-  };
+                // 로그인 상태 확인
+                if (response.status === 200 && response.data) {
+                    setIsLoggedIn(true);
+                    setUserData(response.data);
+                } else {
+                    setIsLoggedIn(false);
+                    setUserData(null);
+                }
+            } catch {
+                setIsLoggedIn(false);
+                setUserData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+        checkLoginStatus();
+    }, []);
 
-// AuthContext 사용 (useAuth 훅 제거)
-export const useAuthContext = () => {
-  return useContext(AuthContext);
+    if (loading) {
+        return <div></div>;
+    }
+
+    return (
+        <AuthContext.Provider value={{ isLoggedIn, userData, setIsLoggedIn, setUserData }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-export default AuthContext;
+// useAuth 훅 정의
+export const useAuth = () => useContext(AuthContext);
