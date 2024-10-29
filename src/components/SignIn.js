@@ -46,21 +46,25 @@ const SignIn = ({ toggleLogin }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={toggleLogin}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="signIn-modal-overlay" onClick={toggleLogin}>
+      <div
+        className="signIn-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
-          className="close-button"
+          className="signIn-close-button"
           onClick={toggleLogin}
           aria-label="Close modal"
         >
           <MdClose />
         </button>
         <form onSubmit={handleSubmit}>
-          <h2>Login</h2>
+          <h2 className="signIn-title">Login</h2>
           <div>
             <label>
               닉네임
               <input
+                className="signIn-nickname-Input"
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
@@ -73,6 +77,7 @@ const SignIn = ({ toggleLogin }) => {
             <label>
               비밀번호
               <input
+                className="signIn-password-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -85,6 +90,7 @@ const SignIn = ({ toggleLogin }) => {
           <div>
             <label>
               <input
+                className="signIn-autoLogin-checkbox"
                 type="checkbox"
                 checked={autoLogin}
                 onChange={(e) => setAutoLogin(e.target.checked)}

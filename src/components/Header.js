@@ -4,13 +4,13 @@ import axios from "axios";
 import "../css/Header.css";
 import SignIn from "./SignIn";
 import { FaUser, FaBars } from "react-icons/fa";
+import { IoMdArrowRoundBack } from "react-icons/io";
 import { useAuth } from "../auth-context";
 
 const Header = () => {
   const { isLoggedIn, userData, setIsLoggedIn } = useAuth();
 
   const nickname = userData?.nick_name;
-  console.log(nickname);
 
   // 사이드바 클릭 액션
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -76,7 +76,7 @@ const Header = () => {
 
           {/* 사이드바 */}
           <button className="icon-button menu-button" onClick={toggleSidebar}>
-            <FaBars />
+            <FaBars className="header-icon-button" />
           </button>
         </div>
       </header>
@@ -84,6 +84,9 @@ const Header = () => {
       {/* Sidebar:  */}
       <div className={`sidebar ${isSidebarVisible ? "visible" : ""}`}>
         <nav>
+          <button className="icon-button back-button" onClick={toggleSidebar}>
+            <IoMdArrowRoundBack className="back-button" />
+          </button>
           <ul>
             <li>
               <Link to="/" onClick={toggleSidebar}>

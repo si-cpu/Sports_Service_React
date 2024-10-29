@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAuth } from "../auth-context";
-import "./BoardComponent.css"; // 스타일 불러오기
+import "../css/BoardComponent.css"; // 스타일 불러오기
 
 const BASE_URL = "http://localhost:8181";
 
@@ -18,10 +18,32 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   const [newReply, setNewReply] = useState("");
   const [editingReply, setEditingReply] = useState(null);
   const [editingContent, setEditingContent] = useState("");
+  const [likes, setLikes] = useState(board.likes || 0); // 게시글 좋아요 수 상태
+  const [liked, setLiked] = useState(false); // 게시글 좋아요 여부 상태
+  const [replyLikes, setReplyLikes] = useState({});
+  const [replyLiked, setReplyLiked] = useState({}); // 댓글 좋아요 여부 상태
 
   useEffect(() => {
     fetchReply();
+    checkIfLiked();
   }, [board_num]);
+
+  // 좋아요 여부 초기화 함수
+  const checkIfLiked = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/board/like_status/${board_num}`,
+        {
+          withCredentials: true,
+        }
+      );
+      if (response.data === "success") {
+        liked = true;
+      }
+    } catch (error) {
+      console.error("Error checking if liked:", error);
+    }
+  };
 
   // 댓글 목록 불러오기 함수
   const fetchReply = async () => {
@@ -30,8 +52,86 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
         `${BASE_URL}/reply/find_all/${board_num}`
       );
       setReply(response.data || []);
+      const initialReplyLikes = response.data.reduce((acc, item) => {
+        acc[item.reply_num] = item.likes || 0;
+        return acc;
+      }, {});
+      setReplyLikes(initialReplyLikes);
     } catch (error) {
       console.error("Error fetching reply:", error);
+    }
+  };
+
+  // 게시글 좋아요/취소 토글 함수
+  const toggleLikePost = async () => {
+    console.log("liked: ", liked);
+
+    try {
+      if (liked) {
+        // 좋아요 취소
+
+        await axios.delete(`${BASE_URL}/board/unlike/${board_num}`, {
+          withCredentials: true,
+        });
+        setLiked(false);
+        setLikes((prevLikes) => prevLikes - 1);
+      } else {
+        // 좋아요 추가
+        await axios.post(`${BASE_URL}/board/like/${board_num}`, null, {
+          withCredentials: true,
+        });
+        setLiked(true);
+        setLikes((prevLikes) => prevLikes + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      alert("좋아요 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 댓글 좋아요/취소 토글 함수
+  const toggleLikeReply = async (reply_num) => {
+    try {
+      if (replyLiked[reply_num]) {
+        // 좋아요 취소
+        await axios.delete(
+          `${BASE_URL}/reply/unlike/${reply_num}`,
+          { reply_num: reply_num },
+          {
+            withCredentials: true,
+          }
+        );
+        setReplyLikes((prevLikes) => ({
+          ...prevLikes,
+          [reply_num]: prevLikes[reply_num] - 1,
+        }));
+        setReplyLiked((prevLiked) => ({
+          ...prevLiked,
+          [reply_num]: false,
+        }));
+        fetchReply(); // 댓글 목록 다시 불러오기
+      } else {
+        // 좋아요 추가
+        await axios.post(
+          `${BASE_URL}/reply/like/${reply_num}`,
+          { reply_num: reply_num },
+          {
+            withCredentials: true,
+          }
+        );
+        setReplyLikes((prevLikes) => ({
+          ...prevLikes,
+          [reply_num]: prevLikes[reply_num] + 1,
+        }));
+        setReplyLiked((prevLiked) => ({
+          ...prevLiked,
+          [reply_num]: true,
+        }));
+        fetchReply(); // 댓글 목록 다시 불러오기
+      }
+    } catch (error) {
+      console.error("Error toggling like for reply:", error);
+      alert("댓글 좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -187,61 +287,95 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       {isEditing ? (
         <>
           <input
+            className="BoardComponent-title-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isLoading}
           />
           <textarea
+            className="BoardComponent-contents"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             disabled={isLoading}
           />
-          <button onClick={handleEdit} disabled={isLoading}>
+          <button
+            className="BoardComponent-save-button"
+            onClick={handleEdit}
+            disabled={isLoading}
+          >
             {isLoading ? "저장 중..." : "저장"}
           </button>
-          <button onClick={() => setIsEditing(false)} disabled={isLoading}>
+          <button
+            className="BoardComponent-cancel-button"
+            onClick={() => setIsEditing(false)}
+            disabled={isLoading}
+          >
             취소
           </button>
         </>
       ) : (
         <>
-          <h2>{board.title}</h2>
+          <h2 className="BoardComponent-title"> {board.title}</h2>
           <p>작성자: {board.writer}</p>
           <p>{board.content}</p>
+          <div>
+            <button
+              className="BoardComponent-like-button"
+              onClick={toggleLikePost}
+              disabled={isLoading}
+            >
+              {liked ? "좋아요 취소" : "좋아요"} 👍 {likes}
+            </button>
+          </div>
           {userData.nick_name === board.writer && (
             <>
-              <button onClick={() => setIsEditing(true)} disabled={isLoading}>
+              <button
+                className="BoardComponent-modi-button"
+                onClick={() => setIsEditing(true)}
+                disabled={isLoading}
+              >
                 수정
               </button>
-              <button onClick={handleDeleteContent} disabled={isLoading}>
+              <button
+                className="BoardComponent-delet-button"
+                onClick={handleDeleteContent}
+                disabled={isLoading}
+              >
                 {isLoading ? "삭제 중..." : "삭제"}
               </button>
             </>
           )}
         </>
       )}
-      <button onClick={onClose} disabled={isLoading}>
+      <button
+        className="BoardComponent-close-button"
+        onClick={onClose}
+        disabled={isLoading}
+      >
         닫기
       </button>
       <div className="reply-section">
-        <h3>댓글</h3>
+        <h3 className="BoardComponent-reply-title">댓글</h3>
         {reply.length > 0 ? (
           reply.map((replyItem) => (
             <div key={replyItem.reply_num} className="reply">
               {editingReply === replyItem.reply_num ? (
                 <>
                   <textarea
+                    className="BoardComponent-reply-content"
                     value={editingContent}
                     onChange={(e) => setEditingContent(e.target.value)}
                     disabled={isLoading}
                   />
                   <button
+                    className="BoardComponent-reply-save"
                     onClick={() => handleEditReply(replyItem.reply_num)}
                     disabled={isLoading}
                   >
                     {isLoading ? "저장 중..." : "저장"}
                   </button>
                   <button
+                    className="BoardComponent-reply-cancel"
                     onClick={() => setEditingReply(null)}
                     disabled={isLoading}
                   >
@@ -250,8 +384,21 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
                 </>
               ) : (
                 <>
-                  <p>{replyItem.content}</p>
-                  <p>작성자: {replyItem.writer}</p>
+                  <p className="BoardComponent-content">{replyItem.content}</p>
+                  <p className="BoardComponent-writer">
+                    작성자: {replyItem.writer}
+                  </p>
+                  <div>
+                    <button
+                      onClick={() => toggleLikeReply(replyItem.reply_num)}
+                      disabled={isLoading}
+                    >
+                      {replyLiked[replyItem.reply_num]
+                        ? "좋아요 취소"
+                        : "좋아요"}{" "}
+                      👍 {replyLikes[replyItem.reply_num] || 0}
+                    </button>
+                  </div>
                   {userData.nick_name === replyItem.writer && (
                     <>
                       <button

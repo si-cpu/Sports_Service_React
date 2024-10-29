@@ -59,19 +59,27 @@ const BoardWriteComponent = ({
     >
       <h2>새 게시글 작성</h2>
       <input
+        className="Board-write-title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="제목을 입력하세요"
       />
       <textarea
+        className="Board-write-content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="내용을 입력하세요"
       />
-      <button onClick={handleSave} disabled={isLoading}>
+      <button
+        className="Board-write-save-button"
+        onClick={handleSave}
+        disabled={isLoading}
+      >
         {isLoading ? "저장 중..." : "저장"}
       </button>
-      <button onClick={toggleWriteModal}>취소</button>
+      <button className="Board-write-cancel-button" onClick={toggleWriteModal}>
+        취소
+      </button>
     </Modal>
   );
 };
