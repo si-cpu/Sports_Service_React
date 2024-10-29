@@ -59,7 +59,6 @@ const BoardList = () => {
   const openModal = (board) => {
     increaseViewCount(board);
     severLikeStatus(board); // 게시글 좋아요 여부 확인
-    checkReplyLikes(board.board_num); // 댓글 좋아요 여부 확인
     setSelectedBoard(board);
     setIsModalOpen(true);
   };
@@ -81,25 +80,6 @@ const BoardList = () => {
     } catch (error) {
       console.error("Error liking post:", error);
       alert("좋아요 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 댓글 좋아요 확인
-  const checkReplyLikes = async (boardNum) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/reply/like_status/${boardNum}`,
-        {
-          withCredentials: true,
-        }
-      );
-      const replyLikesData = response.data.reduce((acc, reply) => {
-        acc[reply.reply_num] = reply.liked;
-        return acc;
-      }, {});
-      setReplyLiked(replyLikesData);
-    } catch (error) {
-      console.error("Error checking reply likes:", error);
     }
   };
 
@@ -159,12 +139,6 @@ const BoardList = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           aria-label="Search posts"
         />
-        <button
-          className="board-list-search-button"
-          onClick={() => setSearchQuery(searchQuery)}
-        >
-          검색
-        </button>
         <button
           className="board-list-view-sort-button"
           onClick={() => setSortBy("views")}

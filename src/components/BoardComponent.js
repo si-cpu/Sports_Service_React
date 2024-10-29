@@ -31,15 +31,35 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   // 좋아요 여부 초기화 함수
   const checkIfLiked = async () => {
     try {
-      const response = await axios.get(
+      // 게시글 좋아요 여부 확인
+      const postLikeResponse = await axios.get(
         `${BASE_URL}/board/like_status/${board_num}`,
+        { withCredentials: true }
+      );
+      console.log(postLikeResponse);
+
+      if (postLikeResponse.data === "failed") {
+        setLiked(false);
+      } else {
+        setLiked(true);
+      } // 서버로부터 liked 상태를 받아 설정
+
+      const response = await axios.get(
+        `http://localhost:8181/reply/like_status/${board_num}`,
         {
           withCredentials: true,
         }
       );
-      if (response.data === "success") {
-        liked = true;
-      }
+
+      // 서버에서 좋아요된 reply_num 리스트를 받는다고 가정
+      const likedReplies = response.data || []; // 서버에서 { likedReplies: [reply_num, ...] } 형태로 응답
+
+      // 초기 댓글 좋아요 상태 설정
+      const initialReplyLiked = {};
+      likedReplies.forEach((reply_num) => {
+        initialReplyLiked[reply_num] = true; // 리스트에 포함된 reply_num만 true로 설정
+      });
+      setReplyLiked(initialReplyLiked); // 댓글별 좋아요 여부 설정
     } catch (error) {
       console.error("Error checking if liked:", error);
     }
@@ -49,13 +69,16 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   const fetchReply = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/reply/find_all/${board_num}`
+        `http://localhost:8181/reply/find_all/${board_num}`
       );
-      setReply(response.data || []);
-      const initialReplyLikes = response.data.reduce((acc, item) => {
-        acc[item.reply_num] = item.likes || 0;
-        return acc;
-      }, {});
+      const replies = response.data || [];
+      setReply(replies);
+
+      await checkIfLiked(); // 댓글 좋아요 상태 불러오기
+      const initialReplyLikes = {};
+      replies.forEach((r) => {
+        initialReplyLikes[r.reply_num] = r.likes || 0; // 댓글마다 좋아요 수 초기화
+      });
       setReplyLikes(initialReplyLikes);
     } catch (error) {
       console.error("Error fetching reply:", error);
@@ -70,7 +93,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       if (liked) {
         // 좋아요 취소
 
-        await axios.delete(`${BASE_URL}/board/unlike/${board_num}`, {
+        await axios.delete(`http://localhost:8181/board/unlike/${board_num}`, {
           withCredentials: true,
         });
         setLiked(false);
@@ -94,40 +117,30 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
     try {
       if (replyLiked[reply_num]) {
         // 좋아요 취소
-        await axios.delete(
-          `${BASE_URL}/reply/unlike/${reply_num}`,
-          { reply_num: reply_num },
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.delete(`${BASE_URL}/reply/unlike/${reply_num}`, {
+          withCredentials: true,
+        });
         setReplyLikes((prevLikes) => ({
           ...prevLikes,
-          [reply_num]: prevLikes[reply_num] - 1,
+          [reply_num]: Math.max((prevLikes[reply_num] || 1) - 1, 0), // 좋아요 수가 0 이하로 가지 않도록 처리
         }));
         setReplyLiked((prevLiked) => ({
           ...prevLiked,
           [reply_num]: false,
         }));
-        fetchReply(); // 댓글 목록 다시 불러오기
       } else {
         // 좋아요 추가
-        await axios.post(
-          `${BASE_URL}/reply/like/${reply_num}`,
-          { reply_num: reply_num },
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.post(`${BASE_URL}/reply/like/${reply_num}`, null, {
+          withCredentials: true,
+        });
         setReplyLikes((prevLikes) => ({
           ...prevLikes,
-          [reply_num]: prevLikes[reply_num] + 1,
+          [reply_num]: (prevLikes[reply_num] || 0) + 1,
         }));
         setReplyLiked((prevLiked) => ({
           ...prevLiked,
           [reply_num]: true,
         }));
-        fetchReply(); // 댓글 목록 다시 불러오기
       }
     } catch (error) {
       console.error("Error toggling like for reply:", error);
