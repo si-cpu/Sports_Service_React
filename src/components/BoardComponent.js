@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAuth } from "../auth-context";
@@ -7,10 +7,10 @@ import "../css/BoardComponent.css"; // 스타일 불러오기
 const BASE_URL = "http://localhost:8181";
 
 const BoardComponent = ({ isOpen, onClose, board }) => {
-  const { isLoggedIn, userData } = useAuth();
+  const { userData } = useAuth();
   const nickname = userData?.nickname;
   const [title, setTitle] = useState(board.title);
-  const [board_num, setBoard_num] = useState(board.board_num);
+  const board_num = board.board_num;
   const [content, setContent] = useState(board.content);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,29 +23,18 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   const [replyLikes, setReplyLikes] = useState({});
   const [replyLiked, setReplyLiked] = useState({}); // 댓글 좋아요 여부 상태
 
-  useEffect(() => {
-    fetchLikes(); // 모달이 열릴 때마다 추천수 조회
-    fetchReply();
-    checkIfLiked();
-    fetchReply(); // 댓글 목록 새로고침
-  }, [board_num]);
-
   // 추천수 조회 함수
-  const fetchLikes = async () => {
+  const fetchLikes =useCallback( async () => {
     try {
       // 수정된 요청 경로
-      const response = await axios.get(
-        `${BASE_URL}/board/like_status/${board_num}`, // 'like_status'로 변경하여 백엔드와 일치시킴
-        { withCredentials: true }
-      );
 
       setLikes(board.good_count); // 서버로부터 추천수 설정
     } catch (error) {
       console.error("Error fetching likes:", error);
     }
-  };
+  }, [board.good_count]);
   // 좋아요 여부 초기화 함수
-  const checkIfLiked = async () => {
+  const checkIfLiked = useCallback(async () => {
     try {
       // 게시글 좋아요 여부 확인
       const postLikeResponse = await axios.get(
@@ -79,10 +68,10 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
     } catch (error) {
       console.error("Error checking if liked:", error);
     }
-  };
+  },[board_num]);
 
   // 댓글 목록 불러오기 함수
-  const fetchReply = async () => {
+  const fetchReply = useCallback(async () => {
     try {
       const response = await axios.get(
         `http://localhost:8181/reply/find_all/${board_num}`
@@ -104,7 +93,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
     } catch (error) {
       console.error("Error fetching reply:", error);
     }
-  };
+  },[board_num]);
 
   // 게시글 좋아요/취소 토글 함수
   const toggleLikePost = async () => {
@@ -321,6 +310,14 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchLikes(); // 모달이 열릴 때마다 추천수 조회
+    fetchReply();
+    checkIfLiked();
+    fetchReply(); // 댓글 목록 새로고침
+  }, [fetchLikes,fetchReply,checkIfLiked]);
+
   return (
     <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel="게시글 내용">
       {isEditing ? (
@@ -366,7 +363,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
               {liked ? "좋아요 취소" : "좋아요"} 👍 {likes}
             </button>
           </div>
-          {userData.nickname === board.writer && (
+          {userData.nick_name === board.writer && (
             <>
               <button
                 className="BoardComponent-modi-button"

@@ -17,9 +17,7 @@ const BoardList = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("none");
-  const [liked, setLiked] = useState(false); // 좋아요 여부 상태
-  const [likes, setLikes] = useState(0); // 좋아요 수 상태
-  const [replyLiked, setReplyLiked] = useState({}); // 댓글 좋아요 여부 상태
+
 
   const getBoardList = async () => {
     try {
@@ -58,29 +56,9 @@ const BoardList = () => {
 
   const openModal = (board) => {
     increaseViewCount(board);
-    severLikeStatus(board); // 게시글 좋아요 여부 확인
+
     setSelectedBoard(board);
     setIsModalOpen(true);
-  };
-  const severLikeStatus = async (board) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8181/board/like_status/${board.board_num}`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (response.data === "success") {
-        console.log(response.data);
-
-        setLiked(true);
-      } else {
-        setLiked(false);
-      }
-    } catch (error) {
-      console.error("Error liking post:", error);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
-    }
   };
 
   const closeModal = () => {
@@ -184,7 +162,6 @@ const BoardList = () => {
           writer={userData.nick_name}
         />
       )}
-      getBoardList();
       <BoardWrite
         isWriteModalOpen={isWriteModalOpen}
         toggleWriteModal={toggleWriteModal}
