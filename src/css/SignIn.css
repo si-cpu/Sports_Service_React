@@ -1,75 +1,112 @@
-/* modal.css */
+/* 모달 배경 */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
+/* 모달 콘텐츠 */
 .modal-content {
-    background-color: #fff;
+    background-color: #fefefe;
     padding: 20px;
-    border-radius: 4px;
-    width: 300px;
-    position: relative;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.close-button {
+/* 닫기 버튼 */
+.close-modal-button {
     position: absolute;
     top: 10px;
     right: 10px;
     background: none;
     border: none;
-    font-size: 1rem;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
-h1 {
-    color: black;
+/* 로그인 제목 */
+.sign-in-title {
+    color: #333;
     text-align: center;
+    margin-bottom: 20px;
 }
 
-h3 {
-    color: black;
-    text-align: center;
-}
-
-h2 {
-    color: black;
-    text-align: center;
-}
-
-label {
-    color: black;
-}
-
-.signup {
-    width: 50%;
-    background-color: gainsboro;
-    text-align: center;
-    flex: auto;
-    align-content: center;
-    margin: 10px;
-    border: 2px solid black;
-    color: black;
-    text-decoration: none;
-}
-
-.logIn {
-    width: 50%;
-    background-color: gainsboro;
-    text-align: center;
-    flex: auto;
-    align-content: center;
-    margin: 10px;
-    border: 2px solid black;
-}
-
-.log-sign-btn {
+/* 로그인 폼 */
+.sign-in-form {
     display: flex;
+    flex-direction: column;
+}
+
+/* 입력 필드 */
+.input-field {
+    margin-bottom: 15px;
+}
+
+/* 입력 필드 스타일 */
+.nickname-input,
+.password-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+/* 자동 로그인 체크박스 스타일 */
+.auto-login-container {
+    display: flex;
+    align-items: center;
+}
+
+/* 로그인 버튼 및 회원가입 버튼 */
+.login-signup-button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* 로그인 버튼 스타일 */
+.login-button {
+    background-color: #007aff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* 회원가입 링크 스타일 */
+.signup-button {
+    color: #007aff;
+    text-decoration: none;
+    margin-left: 10px;
+    padding: 10px;
+    border: 1px solid #007aff;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+/* 호버 시 효과 */
+.signup-button:hover {
+    background-color: #007aff;
+    color: white;
+}
+
+.autoLoginName {
+    font-size: 20px;
+    margin: 5px;
+}
+
+.auto-login-checkbox {
+    border: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
 }

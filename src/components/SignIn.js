@@ -34,7 +34,6 @@ const SignIn = ({ toggleLogin }) => {
       console.log("response: ", response);
       if (response.data === "success") {
         alert("로그인 성공");
-        // resetForm();
         toggleLogin();
         window.location.reload();
       } else {
@@ -46,65 +45,60 @@ const SignIn = ({ toggleLogin }) => {
   };
 
   return (
-    <div className="signIn-modal-overlay" onClick={toggleLogin}>
-      <div
-        className="signIn-modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="modal-overlay" onClick={toggleLogin}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <button
-          className="signIn-close-button"
+          className="close-modal-button"
           onClick={toggleLogin}
           aria-label="Close modal"
         >
           <MdClose />
         </button>
-        <form onSubmit={handleSubmit}>
-          <h2 className="signIn-title">Login</h2>
-          <div>
-            <label>
-              닉네임
-              <input
-                className="signIn-nickname-Input"
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="닉네임 입력"
-                required
-              />
-            </label>
+        <h2 className="sign-in-title">로그인</h2>
+        <form onSubmit={handleSubmit} className="sign-in-form">
+          <div className="input-field">
+            <label htmlFor="nickname">닉네임</label>
+            <input
+              id="nickname"
+              className="nickname-input"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="닉네임 입력"
+              required
+            />
           </div>
-          <div>
-            <label>
-              비밀번호
-              <input
-                className="signIn-password-input"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호 입력"
-                required
-              />
-            </label>
+          <div className="input-field">
+            <label htmlFor="password">비밀번호</label>
+            <input
+              id="password"
+              className="password-input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호 입력"
+              required
+            />
           </div>
 
-          <div>
-            <label>
+          <div className="auto-login-container">
+            <label className="auto-login-label">
               <input
-                className="signIn-autoLogin-checkbox"
+                className="auto-login-checkbox"
                 type="checkbox"
                 checked={autoLogin}
                 onChange={(e) => setAutoLogin(e.target.checked)}
               />
-              자동 로그인
             </label>
+            <p className="autoLoginName">자동 로그인</p>
           </div>
 
-          <div className="log-sign-btn">
-            <button className="logIn" type="submit">
-              Login
+          <div className="login-signup-button-container">
+            <button className="login-button" type="submit">
+              로그인
             </button>
 
-            <Link className="signup" to="/signup" onClick={toggleLogin}>
+            <Link className="signup-button" to="/signup" onClick={toggleLogin}>
               회원가입
             </Link>
           </div>

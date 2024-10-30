@@ -8,7 +8,7 @@ import SignUp from "./pages/SignUp";
 import Header from "./components/Header";
 import AccountModify from "./pages/AccountModify";
 import BoardComponent from "./components/BoardComponent";
-
+import TeamDetail from "./pages/TeamDetail";
 import TeamChoose from "./components/TeamChoose";
 
 import { AuthProvider } from "./auth-context";
@@ -30,6 +30,7 @@ function App() {
               <Route path="/account/modify" element={<AccountModify />} />
               <Route path="/board/list" element={<BoardList />} />
               <Route path="/board/componenSt" element={<BoardComponent />} />
+              <Route path="/team/detail" element={<TeamDetail />} />
             </Routes>
           </main>
         </div>

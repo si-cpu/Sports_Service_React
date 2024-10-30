@@ -6,9 +6,8 @@ import "../css/BoardComponent.css"; // 스타일 불러오기
 
 const BASE_URL = "http://localhost:8181";
 
-const BoardComponent = ({ isOpen, onClose, board }) => {
+const BoardComponent = ({ isOpen, onClose, board, nickname }) => {
   const { isLoggedIn, userData } = useAuth();
-  const nickname = userData?.nickname;
   const [title, setTitle] = useState(board.title);
   const [board_num, setBoard_num] = useState(board.board_num);
   const [content, setContent] = useState(board.content);
@@ -358,15 +357,19 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
           <p>작성자: {board.writer}</p>
           <p>{board.content}</p>
           <div>
-            <button
-              className="BoardComponent-like-button"
-              onClick={toggleLikePost}
-              disabled={isLoading}
-            >
-              {liked ? "좋아요 취소" : "좋아요"} 👍 {likes}
-            </button>
+            {!isLoggedIn ? (
+              <>👍좋아요 {board.good_count || 0}</>
+            ) : (
+              <button
+                className="BoardComponent-like-button"
+                onClick={toggleLikePost}
+                disabled={isLoading}
+              >
+                {liked ? "좋아요 취소" : "좋아요"} 👍 {likes}
+              </button>
+            )}
           </div>
-          {userData.nickname === board.writer && (
+          {userData?.nickname === board.writer && (
             <>
               <button
                 className="BoardComponent-modi-button"
@@ -402,15 +405,23 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
                   작성자: {replyItem.writer}
                 </p>
                 <div>
-                  <button
-                    onClick={() => toggleLikeReply(replyItem.reply_num)}
-                    disabled={isLoading}
-                  >
-                    {replyLiked[replyItem.reply_num] ? "좋아요 취소" : "좋아요"}{" "}
-                    👍 {replyLikes[replyItem.reply_num] || 0}
-                  </button>
+                  {!isLoggedIn ? (
+                    <>👍좋아요 {replyLikes[replyItem.reply_num] || 0}</>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleLikeReply(replyItem.reply_num)}
+                        disabled={isLoading}
+                      >
+                        {replyLiked[replyItem.reply_num]
+                          ? "좋아요 취소"
+                          : "좋아요"}{" "}
+                        👍 {replyLikes[replyItem.reply_num] || 0}
+                      </button>
+                    </>
+                  )}
                 </div>
-                {userData.nick_name === replyItem.writer && (
+                {userData?.nick_name === replyItem.writer && (
                   <>
                     <button
                       onClick={() => {
@@ -429,6 +440,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
                     </button>
                   </>
                 )}
+
                 {editingReply === replyItem.reply_num && (
                   <div>
                     <input

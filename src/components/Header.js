@@ -103,11 +103,6 @@ const Header = () => {
                 게시판
               </Link>
             </li>
-            <li>
-              <Link to="/team" onClick={toggleSidebar}>
-                팀 상세 보기
-              </Link>
-            </li>
           </ul>
         </nav>
       </div>

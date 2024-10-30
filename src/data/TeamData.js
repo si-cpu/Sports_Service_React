@@ -6,6 +6,7 @@ const TeamData = {
       {
         num: 13,
         name: "기아 타이거즈",
+        content: "",
         logo: require("../assest/img/team/baseball/KBO/13.png"),
       },
       {
