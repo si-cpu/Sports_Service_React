@@ -1,4 +1,23 @@
-# Sports Community Service
+<div align="center">
+  <img src="./docs/logo.png" alt="Sports Community Logo" width="200">
+  
+  # Sports Community Service
+  스포츠 팬들을 위한 종합 커뮤니티 서비스
+  
+  [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+  [![React](https://img.shields.io/badge/React-18.0.0-blue.svg)](https://reactjs.org/)
+</div>
+
+---
+
+## 👥 팀원 소개
+
+| 이름 | 역할 | GitHub |
+|:---:|:---:|:---:|
+| 시효건 | **Team Leader**<br>기획 / 프론트엔드 개발 | [![GitHub](https://img.shields.io/badge/GitHub-si--cpu-181717?style=flat&logo=github)](https://github.com/si-cpu) |
+| 이환희 | 프론트엔드 개발<br>데이터셋 구축 | [![GitHub](https://img.shields.io/badge/GitHub-leehah0908-181717?style=flat&logo=github)](https://github.com/leehah0908) |
+| 김민우 | 백엔드 개발 | [![GitHub](https://img.shields.io/badge/GitHub-minus43-181717?style=flat&logo=github)](https://github.com/minus43) |
+
 
 ## 프로젝트 소개
 이 프로젝트는 스포츠 팬들을 위한 종합 커뮤니티 서비스입니다. 
@@ -52,17 +71,21 @@
 
 ## 스크린샷
 ### 메인 페이지
-[메인 페이지 스크린샷]
+![메인 페이지 스크린샷](./docs/main.png)
 
 ### 게시판
-[게시판 스크린샷]
+![게시판 스크린샷](./docs/board.png)
 
 ### 팀 선택 페이지
-[팀 선택 페이지 스크린샷]
+![팀 선택 페이지 스크린샷](./docs/team.png)
 
 
 ## 시스템 요구사항
 - Node.js 16.0.0 이상
 - npm 7.0.0 이상
 - React 18.0.0 이상
+
+## 참고
+- 벡엔드 저장소: [Sports Service Backend](https://github.com/si-cpu/Sports_Service_backend)
+- 더 많은 정보는 Wiki 페이지를 참고해주세요.
 
