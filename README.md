@@ -87,5 +87,5 @@
 
 ## 참고
 - 벡엔드 저장소: [Sports Service Backend](https://github.com/si-cpu/Sports_Service_backend)
-- 더 많은 정보는 Wiki 페이지를 참고해주세요.
+- 더 많은 정보는 [Wiki](https://github.com/si-cpu/Sports_Service_React/wiki) 페이지를 참고해주세요.
 
