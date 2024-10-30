@@ -24,10 +24,26 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
   const [replyLiked, setReplyLiked] = useState({}); // 댓글 좋아요 여부 상태
 
   useEffect(() => {
+    fetchLikes(); // 모달이 열릴 때마다 추천수 조회
     fetchReply();
     checkIfLiked();
+    fetchReply(); // 댓글 목록 새로고침
   }, [board_num]);
 
+  // 추천수 조회 함수
+  const fetchLikes = async () => {
+    try {
+      // 수정된 요청 경로
+      const response = await axios.get(
+        `${BASE_URL}/board/like_status/${board_num}`, // 'like_status'로 변경하여 백엔드와 일치시킴
+        { withCredentials: true }
+      );
+
+      setLikes(board.good_count); // 서버로부터 추천수 설정
+    } catch (error) {
+      console.error("Error fetching likes:", error);
+    }
+  };
   // 좋아요 여부 초기화 함수
   const checkIfLiked = async () => {
     try {
@@ -74,12 +90,17 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       const replies = response.data || [];
       setReply(replies);
 
-      await checkIfLiked(); // 댓글 좋아요 상태 불러오기
+      // 댓글마다 좋아요 수 초기화
       const initialReplyLikes = {};
+      const initialReplyLiked = {};
+
       replies.forEach((r) => {
-        initialReplyLikes[r.reply_num] = r.likes || 0; // 댓글마다 좋아요 수 초기화
+        initialReplyLikes[r.reply_num] = r.good_count || 0; // 각 댓글의 좋아요 수 초기화
+        initialReplyLiked[r.reply_num] = false; // 기본적으로 좋아요는 false
       });
-      setReplyLikes(initialReplyLikes);
+
+      setReplyLikes(initialReplyLikes); // 댓글별 좋아요 수 설정
+      setReplyLiked(initialReplyLiked); // 댓글별 좋아요 여부 초기화
     } catch (error) {
       console.error("Error fetching reply:", error);
     }
@@ -87,24 +108,30 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
 
   // 게시글 좋아요/취소 토글 함수
   const toggleLikePost = async () => {
-    console.log("liked: ", liked);
-
     try {
       if (liked) {
-        // 좋아요 취소
-
-        await axios.delete(`http://localhost:8181/board/unlike/${board_num}`, {
-          withCredentials: true,
-        });
-        setLiked(false);
-        setLikes((prevLikes) => prevLikes - 1);
+        const response = await axios.delete(
+          `${BASE_URL}/board/unlike/${board_num}`,
+          { withCredentials: true }
+        );
+        if (response.data === "success") {
+          setLiked(false);
+          setLikes((prevLikes) => prevLikes - 1);
+        } else {
+          alert("좋아요 취소에 실패했습니다.");
+        }
       } else {
-        // 좋아요 추가
-        await axios.post(`${BASE_URL}/board/like/${board_num}`, null, {
-          withCredentials: true,
-        });
-        setLiked(true);
-        setLikes((prevLikes) => prevLikes + 1);
+        const response = await axios.post(
+          `${BASE_URL}/board/like/${board_num}`,
+          null,
+          { withCredentials: true }
+        );
+        if (response.data === "success") {
+          setLiked(true);
+          setLikes((prevLikes) => prevLikes + 1);
+        } else {
+          alert("좋아요 추가에 실패했습니다.");
+        }
       }
     } catch (error) {
       console.error("Error toggling like:", error);
@@ -294,7 +321,6 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
       setIsLoading(false);
     }
   };
-
   return (
     <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel="게시글 내용">
       {isEditing ? (
@@ -328,7 +354,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
         </>
       ) : (
         <>
-          <h2 className="BoardComponent-title"> {board.title}</h2>
+          <h2 className="BoardComponent-title">{board.title}</h2>
           <p>작성자: {board.writer}</p>
           <p>{board.content}</p>
           <div>
@@ -340,7 +366,7 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
               {liked ? "좋아요 취소" : "좋아요"} 👍 {likes}
             </button>
           </div>
-          {userData.nick_name === board.writer && (
+          {userData.nickname === board.writer && (
             <>
               <button
                 className="BoardComponent-modi-button"
@@ -350,107 +376,80 @@ const BoardComponent = ({ isOpen, onClose, board }) => {
                 수정
               </button>
               <button
-                className="BoardComponent-delet-button"
+                className="BoardComponent-delete-button"
                 onClick={handleDeleteContent}
                 disabled={isLoading}
               >
-                {isLoading ? "삭제 중..." : "삭제"}
+                삭제
               </button>
             </>
           )}
-        </>
-      )}
-      <button
-        className="BoardComponent-close-button"
-        onClick={onClose}
-        disabled={isLoading}
-      >
-        닫기
-      </button>
-      <div className="reply-section">
-        <h3 className="BoardComponent-reply-title">댓글</h3>
-        {reply.length > 0 ? (
-          reply.map((replyItem) => (
-            <div key={replyItem.reply_num} className="reply">
-              {editingReply === replyItem.reply_num ? (
-                <>
-                  <textarea
-                    className="BoardComponent-reply-content"
-                    value={editingContent}
-                    onChange={(e) => setEditingContent(e.target.value)}
-                    disabled={isLoading}
-                  />
+          <h3>댓글</h3>
+          <input
+            value={newReply}
+            onChange={(e) => setNewReply(e.target.value)}
+            placeholder="댓글을 입력하세요"
+            disabled={isLoading}
+          />
+          <button onClick={handleAddReply} disabled={isLoading}>
+            추가
+          </button>
+          {reply.length > 0 ? (
+            reply.map((replyItem) => (
+              <div key={replyItem.reply_num} className="reply">
+                <p className="BoardComponent-content">{replyItem.content}</p>
+                <p className="BoardComponent-writer">
+                  작성자: {replyItem.writer}
+                </p>
+                <div>
                   <button
-                    className="BoardComponent-reply-save"
-                    onClick={() => handleEditReply(replyItem.reply_num)}
+                    onClick={() => toggleLikeReply(replyItem.reply_num)}
                     disabled={isLoading}
                   >
-                    {isLoading ? "저장 중..." : "저장"}
+                    {replyLiked[replyItem.reply_num] ? "좋아요 취소" : "좋아요"}{" "}
+                    👍 {replyLikes[replyItem.reply_num] || 0}
                   </button>
-                  <button
-                    className="BoardComponent-reply-cancel"
-                    onClick={() => setEditingReply(null)}
-                    disabled={isLoading}
-                  >
-                    취소
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="BoardComponent-content">{replyItem.content}</p>
-                  <p className="BoardComponent-writer">
-                    작성자: {replyItem.writer}
-                  </p>
-                  <div>
+                </div>
+                {userData.nick_name === replyItem.writer && (
+                  <>
                     <button
-                      onClick={() => toggleLikeReply(replyItem.reply_num)}
+                      onClick={() => {
+                        setEditingReply(replyItem.reply_num);
+                        setEditingContent(replyItem.content);
+                      }}
                       disabled={isLoading}
                     >
-                      {replyLiked[replyItem.reply_num]
-                        ? "좋아요 취소"
-                        : "좋아요"}{" "}
-                      👍 {replyLikes[replyItem.reply_num] || 0}
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReply(replyItem.reply_num)}
+                      disabled={isLoading}
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
+                {editingReply === replyItem.reply_num && (
+                  <div>
+                    <input
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                    />
+                    <button
+                      onClick={() => handleEditReply(replyItem.reply_num)}
+                      disabled={isLoading}
+                    >
+                      수정
                     </button>
                   </div>
-                  {userData.nick_name === replyItem.writer && (
-                    <>
-                      <button
-                        onClick={() => setEditingReply(replyItem.reply_num)}
-                        disabled={isLoading}
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReply(replyItem.reply_num)}
-                        disabled={isLoading}
-                      >
-                        삭제
-                      </button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          ))
-        ) : (
-          <p>등록된 댓글이 없습니다.</p>
-        )}
-        {isLoggedIn ? (
-          <>
-            <input
-              value={newReply}
-              onChange={(e) => setNewReply(e.target.value)}
-              disabled={isLoading}
-              placeholder="댓글을 입력하세요..."
-            />
-            <button onClick={handleAddReply} disabled={isLoading}>
-              {isLoading ? "저장 중..." : "댓글 추가"}
-            </button>
-          </>
-        ) : (
-          <p>댓글을 작성하려면 로그인이 필요합니다.</p>
-        )}
-      </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p>등록된 댓글이 없습니다.</p>
+          )}
+        </>
+      )}
     </Modal>
   );
 };

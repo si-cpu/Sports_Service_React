@@ -7,6 +7,11 @@ import "../css/SignUp.css";
 const SignUp = () => {
   const navigate = useNavigate();
 
+  const allValid = () => {
+    return isEmailValid && isNicknameValid && passwordStrength !== "약함";
+  };
+  
+  
   // 이메일 값, 이메일 중복 여부, 이메일 형식 오류 여부
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(null);
@@ -118,17 +123,15 @@ const SignUp = () => {
       return;
     }
     try {
-      const response = await axios.post(
-        "http://localhost:8181/member/valid_email",
-        {
-          email,
-        }
-      );
+      const response = await axios.get(`http://localhost:8181/member/valid_email`, {
+        params: { email }
+      });
+      
 
-      if (response.data === "notExist") {
+      if (response.data === "able") {
         setIsEmailValid(true);
         alert("사용 가능한 이메일입니다.");
-      } else if (response.data === "exist") {
+      } else {
         setIsEmailValid(false);
         alert("이미 사용 중인 이메일입니다.");
       }
@@ -144,14 +147,11 @@ const SignUp = () => {
       return;
     }
     try {
-      const response = await axios.post(
-        "http://localhost:8181/member/valid_id",
-        {
-          nick_name: nickname,
-        }
+      const response = await axios.get(`http://localhost:8181/member/valid_id?nick_name=${nickname}`, 
       );
+      
 
-      if (response.data === "notExist") {
+      if (response.data === "able") {
         setIsNicknameValid(true);
         alert("사용 가능한 닉네임입니다.");
       } else {
@@ -228,7 +228,17 @@ const SignUp = () => {
       console.error("회원가입 중 오류 발생: ", err);
     }
   };
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  
+    if (allValid()) {
+      submitHandler(e);
+    } else {
+      alert("유효한 비밀번호와 이메일, 닉네임을 써주세요.");
+    }
+  };
+  
+  
   return (
     <div className="signup-container">
       <div className="signup-box">
@@ -236,7 +246,8 @@ const SignUp = () => {
         <p className="signup-second-title">
           회원가입을 통해 더 다양한 서비스를 만나보세요
         </p>
-        <form onSubmit={submitHandler}>
+        <form onSubmit={handleSubmit}>
+
           {/* 이메일 입력 */}
           <div className="signup-input-group">
             <label>
@@ -340,8 +351,9 @@ const SignUp = () => {
             setSelectedTeams={setSelectedTeams}
           />
 
-          <button type="submit" className="signup-submit-button">
-            가입하기
+<button type="submit" className="signup-submit-button" >
+  가입하기
+
           </button>
         </form>
       </div>
