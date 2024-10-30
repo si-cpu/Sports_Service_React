@@ -123,7 +123,7 @@ const BoardList = () => {
   return (
     <div className="board-list-block">
       <h1 className="board-list-title">Sports Service 게시글</h1>
-      <sec className="button-container">
+      <section className="button-container">
         <button
           className="board-list-view-sort-button"
           onClick={() => setSortBy("views")}
@@ -137,34 +137,30 @@ const BoardList = () => {
           추천수 정렬
         </button>
       </section>
-        <ul className="board-list-ul">
-          {filteredAndSortedBoardList.map((board) => (
-            <li key={board.board_num} className="board-list-li">
-              <Link to="#" onClick={() => openModal(board)}>
-                <div className="board-list-item">
-                  <section className="board-list-idx">
-                    No. {board.board_num}
-                  </section>
-                  <h2>{board.title}</h2>
-                  <p className="board-list-writer">작성자: {board.writer}</p>
-                  <p className="board-list-content">{board.content}</p>
-                  <p className="board-list-reg_date">
-                    등록일: {board.reg_date}
-                  </p>
-                  <p className="board-list-mod_date">
-                    수정일: {board.mod_date}
-                  </p>
-                  <p className="board-list-viewCount">
-                    조회수: {board.view_count}
-                  </p>
-                  <p className="board-list-likeCount">
-                    좋아요 수: {board.good_count}
-                  </p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <ul className="board-list-ul">
+        {filteredAndSortedBoardList.map((board) => (
+          <li key={board.board_num} className="board-list-li">
+            <Link to="#" onClick={() => openModal(board)}>
+              <div className="board-list-item">
+                <section className="board-list-idx">
+                  No. {board.board_num}
+                </section>
+                <h2>{board.title}</h2>
+                <p className="board-list-writer">작성자: {board.writer}</p>
+                <p className="board-list-content">{board.content}</p>
+                <p className="board-list-reg_date">등록일: {board.reg_date}</p>
+                <p className="board-list-mod_date">수정일: {board.mod_date}</p>
+                <p className="board-list-viewCount">
+                  조회수: {board.view_count}
+                </p>
+                <p className="board-list-likeCount">
+                  좋아요 수: {board.good_count}
+                </p>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
       {selectedBoard && (
         <BoardComponent
           isOpen={isModalOpen}
