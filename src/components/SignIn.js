@@ -45,8 +45,6 @@ const SignIn = ({ toggleLogin }) => {
     };
 
     const handleKakaoLogin = () => {
-        const currentUrl = window.location.href;
-
         axios
             .get(`http://localhost:8181/kakao/signup`, {
                 params: {
