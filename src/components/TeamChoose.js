@@ -28,7 +28,7 @@ function Tttt({ selectedTeams, setSelectedTeams }) {
     const handleRemoveTeam = (league) => {
         setSelectedTeams((prev) => ({
             ...prev,
-            [league]: null,
+            [league]: "",
         }));
     };
 

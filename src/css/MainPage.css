@@ -6,12 +6,14 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        sans-serif;
     background-color: #f9f9f9;
     color: #333;
 }
 
 .main-page {
+    width: 100%;
     max-width: 2000px;
     margin: 0 auto;
     padding: 20px;
@@ -28,6 +30,83 @@ body {
     grid-column: 1 / span 10;
     grid-row: 1;
     height: 100px;
+}
+
+.matches-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+}
+
+.match-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.match-card .teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.teams .team p {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.team img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 5px;
+}
+
+.match-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 0 15px;
+}
+
+.vs {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 0;
+    margin-bottom: 10px;
+}
+
+.match-time {
+    color: #007bff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 0;
+    margin: 3px;
+}
+
+.teams .match-info .status {
+    background: none;
+    color: #007bff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0;
+    margin: 0px;
 }
 
 .main-page-news {
@@ -57,4 +136,11 @@ body {
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.main-pagetoday-matches {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
 }

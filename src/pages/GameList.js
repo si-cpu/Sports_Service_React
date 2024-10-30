@@ -3,15 +3,27 @@ import { buildApiUrls } from "../components/ApiUrlBuilder";
 import DateList from "../components/DateList";
 import { sportsData } from "../datas/sportsData";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth-context";
 import axios from "axios";
 import "../css/GameList.css";
 
 function GameList() {
     const navigate = useNavigate();
+    const { userData } = useAuth();
+    const userTeams = {
+        kbo: userData.kbo_team,
+        mlb: userData.mlb_team,
+        kleague: userData.kl_team,
+        epl: userData.pl_team,
+        kbl: userData.kbl_team,
+        nba: userData.nba_team,
+        kovo: userData.vman_team,
+        wkovo: userData.vwo_team,
+    };
 
     const today = new Date().toISOString().split("T")[0];
 
-    const [selectedSport, setSelectedSport] = useState("baseball");
+    const [selectedSport, setSelectedSport] = useState("myteam");
     const [selectedLeague, setSelectedLeague] = useState("ALL");
     const [selectedTeam, setSelectedTeam] = useState("ALL");
     const [selectedDate, setSelectedDate] = useState(today);
@@ -71,7 +83,29 @@ function GameList() {
                               );
 
                     // 농구랑 배구는 (nba, kbl), (kovo, wkovo) 말고 다른 리그도 가져와짐 -> 필터링
-                    if (selectedSport === "basketball") {
+                    if (selectedSport === "myteam") {
+                        const leagueFilterGames = filteredGames.filter(
+                            (game) =>
+                                game.categoryId === "kbo" ||
+                                game.categoryId === "mlb" ||
+                                game.categoryId === "kleague" ||
+                                game.categoryId === "epl" ||
+                                game.categoryId === "nba" ||
+                                game.categoryId === "kbl" ||
+                                game.categoryId === "kovo" ||
+                                game.categoryId === "wkovo"
+                        );
+
+                        const removeGames = leagueFilterGames.filter((game) => {
+                            const league = game.categoryId;
+                            const awayTeamMatch = userTeams[league] === game.awayTeamName;
+                            const homeTeamMatch = userTeams[league] === game.homeTeamName;
+
+                            return awayTeamMatch || homeTeamMatch;
+                        });
+
+                        setGames(removeGames);
+                    } else if (selectedSport === "basketball") {
                         const removeGames = filteredGames.filter(
                             (game) => game.categoryId === "nba" || game.categoryId === "kbl"
                         );
